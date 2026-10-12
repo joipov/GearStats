@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.0.13
+
+The mana note beside Spirit is blue.
+
+### Changed
+
+- A Spirit line shows `(30 / 9.9 mp5)` in blue.
+
+## 1.0.12
+
+Stat lines use the normal green again.
+
+### Changed
+
+- Shortened stats are green, the same as the game's other bonus lines.
+
 ## 1.0.11
 
 Each stat has its own color. Healing is called Healing Power.

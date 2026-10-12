@@ -242,8 +242,10 @@ test("spirit shows mana per 5 at 33 percent retention", function()
 	near(whileCasting, 9.9, "while casting")
 	eq(none, false, "none")
 	eq(ns.ManaNote(6, priest()), "(30 / 9.9 mp5)")
-	local text = ns.PresentLine("+6 Spirit", true, true, priest())
-	eq(text, "+6 Spirit |cff808080(30 / 9.9 mp5)|r")
+	local text, green = ns.PresentLine("+6 Spirit", true, true, priest())
+	eq(text, "+6 Spirit |cff599eff(30 / 9.9 mp5)|r")
+	eq(green, false)
+	eq(ns.PresentLine(text, true, true, priest()), nil)
 end)
 
 test("spirit with no retention while casting", function()
@@ -275,34 +277,15 @@ end)
 
 test("present line shortens, notes, and is idempotent", function()
 	local snapshot = warrior()
-	local text = ns.PresentLine("+6 Strength", true, true, snapshot)
+	local text, green = ns.PresentLine("+6 Strength", true, true, snapshot)
 	eq(text, "+6 Strength |cff808080(12 Attack Power)|r")
+	eq(green, false)
 	eq(ns.PresentLine(text, true, true, snapshot), nil)
 
-	local short = ns.PresentLine("Equip: Restores 5 mana per 5 sec.", true, true, priest())
+	local short, shortGreen = ns.PresentLine("Equip: Restores 5 mana per 5 sec.", true, true, priest())
 	eq(short, "+5 mp5 |cff808080(1 Spirit at rest, 3 Spirit while casting)|r")
+	eq(shortGreen, true)
 	eq(ns.PresentLine(short, true, true, priest()), nil)
-end)
-
-local function strongest(r, g, b)
-	return (r > g and r > b and "r") or (g > r and g > b and "g") or (b > r and b > g and "b") or nil
-end
-
-test("each stat has its own color", function()
-	local _, r, g, b = ns.PresentLine("+6 Strength", true, false, nil)
-	eq(strongest(r, g, b), "r")
-	_, r, g, b = ns.PresentLine("Equip: Restores 5 mana per 5 sec.", true, false, nil)
-	eq(strongest(r, g, b), "b")
-	local text, hr, hg, hb, dr, dg, db = ns.PresentLine(
-		"Equip: Increases damage and healing done by magical spells and effects by up to 12.",
-		true,
-		false,
-		nil
-	)
-	eq(text, "+12 Healing Power\n+12 Spell Damage")
-	eq(strongest(hr, hg, hb), "g")
-	eq(strongest(dr, dg, db), "b")
-	eq(dr > dg, true)
 end)
 
 test("numbers drop a trailing zero", function()

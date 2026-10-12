@@ -6,10 +6,10 @@ Target client: World of Warcraft **Forever** (`## Interface: 16001`).
 
 ## Features
 
-- A long line such as `Equip: Restores 5 mana per 5 sec.` becomes `+5 mp5`. Each stat has its own color: mana per 5 seconds is blue, Healing Power is green, spell damage is purple, Strength is red. `Use:` and `Chance on hit:` stay as written. A set bonus keeps its `Set:` prefix.
+- A long line such as `Equip: Restores 5 mana per 5 sec.` becomes `+5 mp5`. Healing is called Healing Power. `Use:` and `Chance on hit:` stay as written. A set bonus keeps its `Set:` prefix.
 - Strength shows the attack power it gives your class. Agility shows attack power when the class gets it, ranged attack power for Warrior, Rogue, and Hunter, and armor (2 per point).
 - Mana per 5 seconds shows the Spirit that matches it at rest and while casting. The split is the five-second rule: spending mana is what suppresses Spirit, not being in combat. The rate comes from your character, so class, intellect, buffs, and talents are already in it. A priest with Meditation at 33% sees about three times as much Spirit while casting as at rest.
-- Spirit shows `(30 / 9.9 mp5)`. The first number is at rest. The second is while casting.
+- Spirit shows `(30 / 9.9 mp5)` in blue. The first number is at rest. The second is while casting.
 - While a second effect also keeps Spirit regen (Mage Armor on top of a meditation talent), the higher percent is used. Those two are not added together.
 - In combat the client hides regen numbers. The last reading from outside combat is kept, with a `~` in front.
 - Crit from Agility is not shown. Forever's per-level coefficients do not match the public tables (paladin +10 Agility: 2.15% at 1, 1.72% at 10, 1.229% at 20, 0.935% at 30, 0.506% at 60), and a guessed curve would be wrong.
@@ -73,7 +73,7 @@ The audit note is not shipped.
 
 ## Verifying in-game
 
-- Hover an `Equip:` stat and a `+Strength` line. The long line shortens and takes that stat's color. A healing-and-damage sentence is two rows, Healing Power first. `+5 mp5` is blue and names the Spirit at rest and while casting.
+- Hover a green `Equip:` stat and a `+Strength` line. The long line shortens and stays green. A healing-and-damage sentence is two rows, Healing Power first. `+5 mp5` names the Spirit at rest and while casting.
 - A Spirit line shows `(30 / 9.9 mp5)`. The first number is at rest. The second is while casting, and it is `0` with no retention talent.
 - `Use:` and `Chance on hit:` are unchanged.
 - `/gs` and the compartment open settings. Turning the addon off puts the original lines back.

@@ -64,47 +64,6 @@ local SCHOOLS = {
 	Holy = true,
 }
 
--- Readable on the dark tooltip. Related stats stay in the same family.
-local COLORS = {
-	strength = { 0.95, 0.32, 0.32 },
-	agility = { 1.00, 0.82, 0.28 },
-	stamina = { 0.90, 0.55, 0.22 },
-	intellect = { 0.62, 0.45, 0.95 },
-	spirit = { 0.70, 0.88, 0.82 },
-	attackPower = { 0.95, 0.50, 0.28 },
-	mp5 = { 0.35, 0.62, 1.00 },
-	hp5 = { 0.45, 0.82, 0.40 },
-	healing = { 0.30, 0.90, 0.55 },
-	spellDamage = { 0.78, 0.42, 0.95 },
-	spellPen = { 0.68, 0.48, 0.82 },
-	hit = { 0.95, 0.78, 0.30 },
-	crit = { 1.00, 0.55, 0.18 },
-	spellHit = { 0.62, 0.55, 1.00 },
-	spellCrit = { 0.85, 0.42, 0.72 },
-	defense = { 0.72, 0.62, 0.42 },
-	dodge = { 0.68, 0.84, 0.32 },
-	parry = { 0.62, 0.74, 0.86 },
-	blockChance = { 0.72, 0.76, 0.82 },
-	blockValue = { 0.78, 0.72, 0.55 },
-	weaponSkill = { 0.78, 0.72, 0.60 },
-	mountSpeed = { 0.35, 0.82, 0.78 },
-	allResist = { 0.78, 0.78, 0.68 },
-}
-
-local SCHOOL_COLOR = {
-	Fire = { 1.00, 0.45, 0.18 },
-	Frost = { 0.55, 0.88, 1.00 },
-	Nature = { 0.40, 0.78, 0.32 },
-	Shadow = { 0.55, 0.38, 0.78 },
-	Arcane = { 0.90, 0.48, 0.95 },
-	Holy = { 1.00, 0.88, 0.40 },
-}
-
-local STAT_SCHOOL = {
-	natureSpellCrit = "Nature",
-	holySpellCrit = "Holy",
-}
-
 local WEAPONS = {
 	Swords = true,
 	Axes = true,
@@ -293,30 +252,6 @@ function ns.MatchStatLine(text)
 	return TryShort(rest, prefix) or TryLong(rest, prefix)
 end
 
-function ns.LineColor(match)
-	if not match then
-		return nil
-	end
-	local school = STAT_SCHOOL[match.stat]
-	if not school and (match.stat == "schoolDamage" or match.stat == "resistance") then
-		local word = match.label:match("^(%a+)")
-		if word and SCHOOL_COLOR[word] then
-			school = word
-		end
-	end
-	local color = school and SCHOOL_COLOR[school] or nil
-	if not color and match.stat == "resistance" then
-		color = COLORS.allResist
-	end
-	if not color then
-		color = COLORS[match.stat]
-	end
-	if not color then
-		return nil
-	end
-	return color[1], color[2], color[3]
-end
-
 function ns.FormatShort(match)
 	if match.text then
 		return match.prefix .. match.text
@@ -328,7 +263,7 @@ function ns.FormatShort(match)
 end
 
 function ns.StripNote(text)
-	return (text:gsub(" |cff808080~?%(.-%)|r$", ""))
+	return (text:gsub(" |cff%x%x%x%x%x%x~?%(.-%)|r$", ""))
 end
 
 function ns.PresentLine(text, shorten, showValues, snapshot)
@@ -341,25 +276,20 @@ function ns.PresentLine(text, shorten, showValues, snapshot)
 		return nil
 	end
 	local body = stripped
-	local color = not match.long or shorten
+	local green = false
 	if match.long and shorten then
 		body = ns.FormatShort(match)
+		green = true
 	end
 	if showValues then
 		local note = ns.StatNote(match, snapshot)
 		if note then
-			body = body .. " |cff808080" .. note .. "|r"
-		end
-	end
-	local r, g, b, r2, g2, b2
-	if color then
-		r, g, b = ns.LineColor(match)
-		if match.text and match.text:find("\n", 1, true) then
-			r2, g2, b2 = ns.LineColor({ stat = "spellDamage", label = "Spell Damage" })
+			local ink = match.stat == "spirit" and "599eff" or "808080"
+			body = body .. " |cff" .. ink .. note .. "|r"
 		end
 	end
 	if body == text then
-		return nil, r, g, b, r2, g2, b2
+		return nil
 	end
-	return body, r, g, b, r2, g2, b2
+	return body, green
 end

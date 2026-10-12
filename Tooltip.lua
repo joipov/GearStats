@@ -43,14 +43,6 @@ local function RightString(tooltip, index)
 	return NamedString(tooltip, index, "TextRight")
 end
 
-local function Close(a, b)
-	return type(a) == "number" and type(b) == "number" and math.abs(a - b) < 0.02
-end
-
-local function SameColor(r, g, b, nr, ng, nb)
-	return Close(r, nr) and Close(g, ng) and Close(b, nb)
-end
-
 local function ColorOf(fs)
 	if not fs then
 		return nil, nil, nil
@@ -134,23 +126,17 @@ function ns.OnItemTooltip(tooltip)
 		end
 		local r, g, b = ColorOf(fs)
 		local rr, rg, rb = ColorOf(rightFs)
-		local newText, cr, cg, cb, cr2, cg2, cb2 = ns.PresentLine(text, db.shorten, db.showValues, snapshot)
+		local newText, green = ns.PresentLine(text, db.shorten, db.showValues, snapshot)
 		local shown = newText or text
 		if newText then
 			changed = true
 		end
 		local first, second = shown:match("^(.-)\n(.*)$")
-		if first and cr then
-			if not SameColor(r, g, b, cr, cg, cb) then
-				changed = true
-			end
-			Push(first, cr, cg, cb, right, rr, rg, rb)
-			Push(second, cr2, cg2, cb2, nil, nil, nil, nil)
-		elseif cr then
-			if not SameColor(r, g, b, cr, cg, cb) then
-				changed = true
-			end
-			Push(shown, cr, cg, cb, right, rr, rg, rb)
+		if first and green then
+			Push(first, 0, 1, 0, right, rr, rg, rb)
+			Push(second, 0, 1, 0, nil, nil, nil, nil)
+		elseif green then
+			Push(shown, 0, 1, 0, right, rr, rg, rb)
 		else
 			Push(shown, r, g, b, right, rr, rg, rb)
 		end

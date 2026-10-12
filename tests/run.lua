@@ -134,10 +134,12 @@ test("set prefix is kept", function()
 end)
 
 test("healing and spell damage stay separate", function()
-	eq(shortened("Equip: Increases damage and healing done by magical spells and effects by up to 12."), "+12 Healing\n+12 Spell Damage")
-	eq(shortened("Equip: Increases healing done by up to 48 and damage done by up to 16 for all magical spells and effects."), "+48 Healing\n+16 Spell Damage")
+	eq(shortened("Equip: Increases damage and healing done by magical spells and effects by up to 12."), "+12 Healing Power\n+12 Spell Damage")
+	eq(shortened("Equip: Increases healing done by up to 48 and damage done by up to 16 for all magical spells and effects."), "+48 Healing Power\n+16 Spell Damage")
 	eq(shortened("Equip: Increases damage done by magical spells and effects by up to 16."), "+16 Spell Damage")
-	eq(shortened("Equip: Increases healing done by spells and effects by up to 48."), "+48 Healing")
+	eq(shortened("Equip: Increases healing done by spells and effects by up to 48."), "+48 Healing Power")
+	eq(shortened("Equip: +48 Healing."), "+48 Healing Power")
+	eq(shortened("+48 Healing Power"), "+48 Healing Power")
 	eq(shortened("Equip: Increases damage done by Fire spells and effects by up to 20."), "+20 Fire Spell Damage")
 end)
 
@@ -146,6 +148,7 @@ test("defense, dodge, weapon skill, and attack power shorten", function()
 	eq(shortened("Equip: Increases your chance to dodge an attack by 1%."), "+1% Dodge")
 	eq(shortened("Equip: Increased Two-handed Swords +5."), "+5 Two-handed Swords Skill")
 	eq(shortened("Equip: +28 Attack Power."), "+28 Attack Power")
+	eq(shortened("Equip: +5 Power."), "+5 Attack Power")
 end)
 
 test("use and chance on hit stay as written", function()
@@ -239,9 +242,8 @@ test("spirit shows mana per 5 at 33 percent retention", function()
 	near(whileCasting, 9.9, "while casting")
 	eq(none, false, "none")
 	eq(ns.ManaNote(6, priest()), "(30 / 9.9 mp5)")
-	local text, green = ns.PresentLine("+6 Spirit", true, true, priest())
+	local text = ns.PresentLine("+6 Spirit", true, true, priest())
 	eq(text, "+6 Spirit |cff808080(30 / 9.9 mp5)|r")
-	eq(green, false)
 end)
 
 test("spirit with no retention while casting", function()
@@ -273,15 +275,34 @@ end)
 
 test("present line shortens, notes, and is idempotent", function()
 	local snapshot = warrior()
-	local text, green = ns.PresentLine("+6 Strength", true, true, snapshot)
+	local text = ns.PresentLine("+6 Strength", true, true, snapshot)
 	eq(text, "+6 Strength |cff808080(12 Attack Power)|r")
-	eq(green, false)
 	eq(ns.PresentLine(text, true, true, snapshot), nil)
 
-	local short, shortGreen = ns.PresentLine("Equip: Restores 5 mana per 5 sec.", true, true, priest())
+	local short = ns.PresentLine("Equip: Restores 5 mana per 5 sec.", true, true, priest())
 	eq(short, "+5 mp5 |cff808080(1 Spirit at rest, 3 Spirit while casting)|r")
-	eq(shortGreen, true)
 	eq(ns.PresentLine(short, true, true, priest()), nil)
+end)
+
+local function strongest(r, g, b)
+	return (r > g and r > b and "r") or (g > r and g > b and "g") or (b > r and b > g and "b") or nil
+end
+
+test("each stat has its own color", function()
+	local _, r, g, b = ns.PresentLine("+6 Strength", true, false, nil)
+	eq(strongest(r, g, b), "r")
+	_, r, g, b = ns.PresentLine("Equip: Restores 5 mana per 5 sec.", true, false, nil)
+	eq(strongest(r, g, b), "b")
+	local text, hr, hg, hb, dr, dg, db = ns.PresentLine(
+		"Equip: Increases damage and healing done by magical spells and effects by up to 12.",
+		true,
+		false,
+		nil
+	)
+	eq(text, "+12 Healing Power\n+12 Spell Damage")
+	eq(strongest(hr, hg, hb), "g")
+	eq(strongest(dr, dg, db), "b")
+	eq(dr > dg, true)
 end)
 
 test("numbers drop a trailing zero", function()

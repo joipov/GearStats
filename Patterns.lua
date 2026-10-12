@@ -64,6 +64,47 @@ local SCHOOLS = {
 	Holy = true,
 }
 
+-- Readable on the dark tooltip. Related stats stay in the same family.
+local COLORS = {
+	strength = { 0.95, 0.32, 0.32 },
+	agility = { 1.00, 0.82, 0.28 },
+	stamina = { 0.90, 0.55, 0.22 },
+	intellect = { 0.62, 0.45, 0.95 },
+	spirit = { 0.70, 0.88, 0.82 },
+	attackPower = { 0.95, 0.50, 0.28 },
+	mp5 = { 0.35, 0.62, 1.00 },
+	hp5 = { 0.45, 0.82, 0.40 },
+	healing = { 0.30, 0.90, 0.55 },
+	spellDamage = { 0.78, 0.42, 0.95 },
+	spellPen = { 0.68, 0.48, 0.82 },
+	hit = { 0.95, 0.78, 0.30 },
+	crit = { 1.00, 0.55, 0.18 },
+	spellHit = { 0.62, 0.55, 1.00 },
+	spellCrit = { 0.85, 0.42, 0.72 },
+	defense = { 0.72, 0.62, 0.42 },
+	dodge = { 0.68, 0.84, 0.32 },
+	parry = { 0.62, 0.74, 0.86 },
+	blockChance = { 0.72, 0.76, 0.82 },
+	blockValue = { 0.78, 0.72, 0.55 },
+	weaponSkill = { 0.78, 0.72, 0.60 },
+	mountSpeed = { 0.35, 0.82, 0.78 },
+	allResist = { 0.78, 0.78, 0.68 },
+}
+
+local SCHOOL_COLOR = {
+	Fire = { 1.00, 0.45, 0.18 },
+	Frost = { 0.55, 0.88, 1.00 },
+	Nature = { 0.40, 0.78, 0.32 },
+	Shadow = { 0.55, 0.38, 0.78 },
+	Arcane = { 0.90, 0.48, 0.95 },
+	Holy = { 1.00, 0.88, 0.40 },
+}
+
+local STAT_SCHOOL = {
+	natureSpellCrit = "Nature",
+	holySpellCrit = "Holy",
+}
+
 local WEAPONS = {
 	Swords = true,
 	Axes = true,
@@ -95,14 +136,16 @@ local LONG = {
 	{ stat = "hit", label = "Hit", percent = true, pattern = "^Improves your chance to hit by (%d+)%%%.?$" },
 	{ stat = "spellPen", label = "Spell Penetration", percent = false, pattern = "^Decreases the magical resistances of your spell targets by (%d+)%.?$" },
 	{ stat = "spellDamage", label = "Spell Damage", percent = false, pattern = "^Increases damage done by magical spells and effects by up to (%d+)%.?$" },
-	{ stat = "healing", label = "Healing", percent = false, pattern = "^Increases healing done by spells and effects by up to (%d+)%.?$" },
-	{ stat = "healing", label = "Healing", percent = false, pattern = "^%+(%d+) Healing Spells%.?$" },
+	{ stat = "healing", label = "Healing Power", percent = false, pattern = "^Increases healing done by spells and effects by up to (%d+)%.?$" },
+	{ stat = "healing", label = "Healing Power", percent = false, pattern = "^%+(%d+) Healing Spells%.?$" },
+	{ stat = "healing", label = "Healing Power", percent = false, pattern = "^%+(%d+) Healing%.?$" },
 	{ stat = "blockChance", label = "Block Chance", percent = true, pattern = "^Increases your chance to block attacks with a shield by (%d+)%%%.?$" },
 	{ stat = "blockValue", label = "Block Value", percent = false, pattern = "^Increases the block value of your shield by (%d+)%.?$" },
 	{ stat = "dodge", label = "Dodge", percent = true, pattern = "^Increases your chance to dodge an attack by (%d+)%%%.?$" },
 	{ stat = "parry", label = "Parry", percent = true, pattern = "^Increases your chance to parry an attack by (%d+)%%%.?$" },
 	{ stat = "defense", label = "Defense", percent = false, pattern = "^Increased Defense %+(%d+)%.?$" },
 	{ stat = "attackPower", label = "Attack Power", percent = false, pattern = "^%+(%d+) Attack Power%.?$" },
+	{ stat = "attackPower", label = "Attack Power", percent = false, pattern = "^%+(%d+) Power%.?$" },
 	{ stat = "attackPower", label = "Attack Power", percent = false, pattern = "^Increases attack power by (%d+)%.?$" },
 	{ stat = "hp5", label = "Health per 5 sec", percent = false, pattern = "^Restores (%d+) health per 5 sec%.?$" },
 	{ stat = "mountSpeed", label = "Mount Speed", percent = true, pattern = "^Increases mount speed by (%d+)%%%.?$" },
@@ -149,6 +192,11 @@ local function TryShort(rest, prefix)
 	if amount then
 		return Hit("mp5", amount, prefix, true, false, "mp5", ManaText(digits, amount < 0))
 	end
+	sign, digits = rest:match("^([%+%-])%s*(%d+)%s+Healing Power%.?$")
+	amount = sign and Signed(sign, digits)
+	if amount then
+		return Hit("healing", amount, prefix, false, false, "Healing Power")
+	end
 	for i = 1, #SHORT_PATTERNS do
 		local row = SHORT_PATTERNS[i]
 		sign, digits = rest:match(row.pattern)
@@ -194,11 +242,11 @@ end
 local function TrySpell(rest, prefix)
 	local heal, damage = rest:match("^Increases healing done by up to (%d+) and damage done by up to (%d+) for all magical spells and effects%.?$")
 	if heal then
-		return Hit("healing", tonumber(heal), prefix, true, false, "Healing", Plus(heal, "Healing") .. "\n" .. Plus(damage, "Spell Damage"))
+		return Hit("healing", tonumber(heal), prefix, true, false, "Healing Power", Plus(heal, "Healing Power") .. "\n" .. Plus(damage, "Spell Damage"))
 	end
 	local both = rest:match("^Increases damage and healing done by magical spells and effects by up to (%d+)%.?$")
 	if both then
-		return Hit("healing", tonumber(both), prefix, true, false, "Healing", Plus(both, "Healing") .. "\n" .. Plus(both, "Spell Damage"))
+		return Hit("healing", tonumber(both), prefix, true, false, "Healing Power", Plus(both, "Healing Power") .. "\n" .. Plus(both, "Spell Damage"))
 	end
 	return nil
 end
@@ -245,6 +293,30 @@ function ns.MatchStatLine(text)
 	return TryShort(rest, prefix) or TryLong(rest, prefix)
 end
 
+function ns.LineColor(match)
+	if not match then
+		return nil
+	end
+	local school = STAT_SCHOOL[match.stat]
+	if not school and (match.stat == "schoolDamage" or match.stat == "resistance") then
+		local word = match.label:match("^(%a+)")
+		if word and SCHOOL_COLOR[word] then
+			school = word
+		end
+	end
+	local color = school and SCHOOL_COLOR[school] or nil
+	if not color and match.stat == "resistance" then
+		color = COLORS.allResist
+	end
+	if not color then
+		color = COLORS[match.stat]
+	end
+	if not color then
+		return nil
+	end
+	return color[1], color[2], color[3]
+end
+
 function ns.FormatShort(match)
 	if match.text then
 		return match.prefix .. match.text
@@ -269,10 +341,9 @@ function ns.PresentLine(text, shorten, showValues, snapshot)
 		return nil
 	end
 	local body = stripped
-	local green = false
+	local color = not match.long or shorten
 	if match.long and shorten then
 		body = ns.FormatShort(match)
-		green = true
 	end
 	if showValues then
 		local note = ns.StatNote(match, snapshot)
@@ -280,8 +351,15 @@ function ns.PresentLine(text, shorten, showValues, snapshot)
 			body = body .. " |cff808080" .. note .. "|r"
 		end
 	end
-	if body == text then
-		return nil
+	local r, g, b, r2, g2, b2
+	if color then
+		r, g, b = ns.LineColor(match)
+		if match.text and match.text:find("\n", 1, true) then
+			r2, g2, b2 = ns.LineColor({ stat = "spellDamage", label = "Spell Damage" })
+		end
 	end
-	return body, green
+	if body == text then
+		return nil, r, g, b, r2, g2, b2
+	end
+	return body, r, g, b, r2, g2, b2
 end

@@ -157,8 +157,9 @@ function ns.RefreshSnapshot()
 	end
 	if not snap.labels then
 		snap.labels = {
-			ap = Label("ATTACK_POWER", "Attack Power"),
-			rap = Label("RANGED_ATTACK_POWER", "Ranged Attack Power"),
+			-- Forever's ATTACK_POWER string is "Power".
+			ap = "Attack Power",
+			rap = "Ranged Attack Power",
 			armor = Label("ARMOR", "Armor"),
 			spirit = Label("SPELL_STAT5_NAME", "Spirit"),
 		}

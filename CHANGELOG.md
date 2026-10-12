@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.0.11
+
+Each stat has its own color. Healing is called Healing Power.
+
+### Changed
+
+- Mana per 5 seconds is blue, Healing Power is green, and spell damage is purple. Strength is red, Agility is gold, and the other stats follow the same idea.
+- A healing line shows `+48 Healing Power`.
+
+## 1.0.10
+
+Attack power is named in full.
+
+### Changed
+
+- A Strength or Agility note says `5 Attack Power`. An item line that says `+5 Power` becomes `+5 Attack Power`.
+
 ## 1.0.9
 
 Healing and spell damage are two rows, and mana per 5 seconds is a short line. Spirit shows both regen rates as one note.

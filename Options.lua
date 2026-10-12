@@ -52,7 +52,7 @@ function ns.InitOptions()
 	minimapSetting:SetValueChangedCallback(function()
 		ns.UpdateMinimapButton()
 	end)
-	Settings.CreateCheckbox(
+	local minimapCheckbox = Settings.CreateCheckbox(
 		category,
 		minimapSetting,
 		"Button on the minimap. Opens settings. Ellesmere puts it with the other addon buttons."
@@ -91,6 +91,7 @@ function ns.InitOptions()
 	local function Enabled()
 		return enableSetting:GetValue()
 	end
+	minimapCheckbox:SetParentInitializer(enableCheckbox, Enabled)
 	shortenCheckbox:SetParentInitializer(enableCheckbox, Enabled)
 	valuesCheckbox:SetParentInitializer(enableCheckbox, Enabled)
 

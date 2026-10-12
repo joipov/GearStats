@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.1
+
+The minimap setting greys out while the addon is off, the same as the other Joipov addons.
+
+### Changed
+
+- **Minimap button** greys out while **Enable Gear Stats** is off.
+
 ## 1.0.0
 
 Shortens long item stat lines and shows what Strength, Agility, and mana per 5 seconds are worth for your class.

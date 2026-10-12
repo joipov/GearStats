@@ -10,15 +10,17 @@ local hit = {
 	long = false,
 	percent = false,
 	label = "",
+	text = nil,
 }
 
-local function Hit(stat, amount, prefix, isLong, percent, label)
+local function Hit(stat, amount, prefix, isLong, percent, label, text)
 	hit.stat = stat
 	hit.amount = amount
 	hit.prefix = prefix
 	hit.long = isLong
 	hit.percent = percent
 	hit.label = label
+	hit.text = text
 	return hit
 end
 
@@ -92,7 +94,7 @@ local LONG = {
 	{ stat = "spellHit", label = "Spell Hit", percent = true, pattern = "^Improves your chance to hit with spells by (%d+)%%%.?$" },
 	{ stat = "hit", label = "Hit", percent = true, pattern = "^Improves your chance to hit by (%d+)%%%.?$" },
 	{ stat = "spellPen", label = "Spell Penetration", percent = false, pattern = "^Decreases the magical resistances of your spell targets by (%d+)%.?$" },
-	{ stat = "spellPower", label = "Spell Power", percent = false, pattern = "^Increases damage and healing done by magical spells and effects by up to (%d+)%.?$" },
+	{ stat = "spellDamage", label = "Spell Damage", percent = false, pattern = "^Increases damage done by magical spells and effects by up to (%d+)%.?$" },
 	{ stat = "healing", label = "Healing", percent = false, pattern = "^Increases healing done by spells and effects by up to (%d+)%.?$" },
 	{ stat = "healing", label = "Healing", percent = false, pattern = "^%+(%d+) Healing Spells%.?$" },
 	{ stat = "blockChance", label = "Block Chance", percent = true, pattern = "^Increases your chance to block attacks with a shield by (%d+)%%%.?$" },
@@ -166,7 +168,29 @@ local function TryWeapon(rest, prefix)
 	return nil
 end
 
+local function Plus(digits, label)
+	return "+" .. digits .. " " .. label
+end
+
+-- One sentence can name healing and spell damage with different amounts.
+-- The replacement keeps both, instead of folding them into one stat.
+local function TrySpell(rest, prefix)
+	local heal, damage = rest:match("^Increases healing done by up to (%d+) and damage done by up to (%d+) for all magical spells and effects%.?$")
+	if heal then
+		return Hit("healing", tonumber(heal), prefix, true, false, "Healing", Plus(heal, "Healing") .. ", " .. Plus(damage, "Spell Damage"))
+	end
+	local both = rest:match("^Increases damage and healing done by magical spells and effects by up to (%d+)%.?$")
+	if both then
+		return Hit("spellDamage", tonumber(both), prefix, true, false, "Spell Damage", Plus(both, "Spell Damage") .. ", " .. Plus(both, "Healing"))
+	end
+	return nil
+end
+
 local function TryLong(rest, prefix)
+	local spelled = TrySpell(rest, prefix)
+	if spelled then
+		return spelled
+	end
 	for i = 1, #LONG do
 		local row = LONG[i]
 		local digits = rest:match(row.pattern)
@@ -196,6 +220,9 @@ function ns.MatchStatLine(text)
 end
 
 function ns.FormatShort(match)
+	if match.text then
+		return match.prefix .. match.text
+	end
 	local sign = match.amount < 0 and "-" or "+"
 	local number = string.format("%d", math.abs(match.amount))
 	local percent = match.percent and "%" or ""

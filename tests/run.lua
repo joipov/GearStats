@@ -132,14 +132,12 @@ test("set prefix is kept", function()
 	eq(shortened("Set: Restores 4 mana per 5 sec."), "Set: +4 Mana per 5 sec")
 end)
 
-test("spell power, healing, and school damage shorten", function()
-	eq(shortened("Equip: Increases damage and healing done by magical spells and effects by up to 12."), "+12 Spell Power")
+test("healing and spell damage stay separate", function()
+	eq(shortened("Equip: Increases damage and healing done by magical spells and effects by up to 12."), "+12 Spell Damage, +12 Healing")
+	eq(shortened("Equip: Increases healing done by up to 48 and damage done by up to 16 for all magical spells and effects."), "+48 Healing, +16 Spell Damage")
+	eq(shortened("Equip: Increases damage done by magical spells and effects by up to 16."), "+16 Spell Damage")
 	eq(shortened("Equip: Increases healing done by spells and effects by up to 48."), "+48 Healing")
 	eq(shortened("Equip: Increases damage done by Fire spells and effects by up to 20."), "+20 Fire Spell Damage")
-end)
-
-test("a line that names two different stats is left alone", function()
-	eq(ns.MatchStatLine("Equip: Increases healing done by up to 48 and damage done by up to 16."), nil)
 end)
 
 test("defense, dodge, weapon skill, and attack power shorten", function()

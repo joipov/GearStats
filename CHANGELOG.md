@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.2
+
+Healing and spell damage stay separate. A line that names both keeps both numbers.
+
+### Changed
+
+- A combined magic line shows Spell Damage and Healing. It no longer says Spell Power.
+- A line that gives one healing amount and a different spell damage amount keeps both.
+
 ## 1.0.1
 
 The minimap setting greys out while the addon is off, the same as the other Joipov addons.

@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.16
+
+Attack power shows the Strength or Agility that matches it.
+
+### Added
+
+- An attack power line shows the Strength that gives the same melee attack power. Rogue and Hunter also see the Agility.
+
 ## 1.0.15
 
 The minimap button tooltip is shorter.

@@ -1,6 +1,6 @@
 # Gear Stats
 
-Shortens long stat sentences on item tooltips, and adds what Strength, Agility, and mana per 5 seconds are worth for your class.
+Shortens long stat sentences on item tooltips, and adds what Strength, Agility, attack power, and mana per 5 seconds are worth for your class.
 
 Target client: World of Warcraft **Forever** (`## Interface: 16001`).
 
@@ -8,6 +8,7 @@ Target client: World of Warcraft **Forever** (`## Interface: 16001`).
 
 - A long line such as `Equip: Restores 5 mana per 5 sec.` becomes `+5 mp5`. Healing is called Healing Power. `Use:` and `Chance on hit:` stay as written. A set bonus keeps its `Set:` prefix.
 - Strength shows the attack power it gives your class. Agility shows attack power when the class gets it, ranged attack power for Warrior, Rogue, and Hunter, and armor (2 per point).
+- Attack power shows the Strength that matches it. Rogue and Hunter also see the Agility. That Agility figure is the melee attack power only. Armor, crit, and ranged attack power stay on the Agility line.
 - Mana per 5 seconds shows the Spirit that matches it at rest and while casting. The split is the five-second rule: spending mana is what suppresses Spirit, not being in combat. The rate comes from your character, so class, intellect, buffs, and talents are already in it. A priest with Meditation at 33% sees about three times as much Spirit while casting as at rest.
 - Spirit shows `(30 / 9.9 mp5)` in blue. The first number is at rest. The second is while casting.
 - While a second effect also keeps Spirit regen (Mage Armor on top of a meditation talent), the higher percent is used. Those two are not added together.
@@ -28,7 +29,7 @@ Loaded in TOC order; modules communicate only through the shared `ns` table.
 | File | Concern |
 | --- | --- |
 | `Patterns.lua` | Which tooltip lines are stats, and the short form |
-| `Convert.lua` | Attack power, armor, and the Spirit and mp5 exchange |
+| `Convert.lua` | Attack power, Strength, Agility, armor, and the Spirit and mp5 exchange |
 | `Database.lua` | SavedVariables defaults, migrations, validation |
 | `Snapshot.lua` | Cached class, level, regen, and casting retention |
 | `Tooltip.lua` | Item tooltip rewrite |
@@ -73,7 +74,7 @@ The audit note is not shipped.
 
 ## Verifying in-game
 
-- Hover a green `Equip:` stat and a `+Strength` line. The long line shortens and stays green. A healing-and-damage sentence is two rows, Healing Power first. `+5 mp5` names the Spirit at rest and while casting.
+- Hover a green `Equip:` stat and a `+Strength` line. The long line shortens and stays green. A healing-and-damage sentence is two rows, Healing Power first. `+5 mp5` names the Spirit at rest and while casting. `+28 Attack Power` names the Strength that matches it, and the Agility for a rogue or hunter.
 - A Spirit line shows `(30 / 9.9 mp5)`. The first number is at rest. The second is while casting, and it is `0` with no retention talent.
 - `Use:` and `Chance on hit:` are unchanged.
 - `/gs` and the compartment open settings. Turning the addon off puts the original lines back.

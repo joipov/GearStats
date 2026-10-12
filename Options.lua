@@ -37,7 +37,7 @@ function ns.InitOptions()
 	local enableCheckbox = Settings.CreateCheckbox(
 		category,
 		enableSetting,
-		"Shortens stat lines on items and shows what Strength, Agility, and mana per 5 seconds are worth."
+		"Shortens stat lines on items and shows what Strength, Agility, attack power, and mana per 5 seconds are worth."
 	)
 
 	local minimapSetting = Settings.RegisterAddOnSetting(
@@ -85,7 +85,7 @@ function ns.InitOptions()
 	local valuesCheckbox = Settings.CreateCheckbox(
 		category,
 		valuesSetting,
-		"Shows attack power and armor for Strength and Agility, and the Spirit behind mana per 5 seconds."
+		"Shows attack power and armor for Strength and Agility, the Strength or Agility behind attack power, and the Spirit behind mana per 5 seconds."
 	)
 
 	local function Enabled()

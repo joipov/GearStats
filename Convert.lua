@@ -1,8 +1,9 @@
 local _, ns = ...
 
--- What a point of a stat becomes for one class. No WoW calls: the tests load
--- this file on its own. Cat Form uses its own Agility conversion, which is
--- not in the class table, so a druid sees the class baseline either way.
+-- What a point of a stat becomes for one class, and the Strength or Agility
+-- an attack power line is worth. No WoW calls: the tests load this file on
+-- its own. Cat Form uses its own Agility conversion, which is not in the
+-- class table, so a druid sees the class baseline either way.
 
 local AP = {
 	WARRIOR = { str = 2, agiMelee = 0, agiRanged = 2 },
@@ -23,6 +24,8 @@ local DEFAULT_LABELS = {
 	rap = "Ranged Attack Power",
 	armor = "Armor",
 	spirit = "Spirit",
+	strength = "Strength",
+	agility = "Agility",
 }
 
 -- Reused so a tooltip pass does not allocate a table per line.
@@ -72,14 +75,14 @@ local function AddBit(value, label)
 	end
 end
 
-local function Join()
+local function Join(separator)
 	for i = noteCount + 1, #bits do
 		bits[i] = nil
 	end
 	if noteCount == 0 then
 		return nil
 	end
-	return "(" .. table.concat(bits, ", ") .. ")"
+	return "(" .. table.concat(bits, separator or ", ") .. ")"
 end
 
 function ns.AttributeNote(stat, amount, classToken, labels, level)
@@ -104,6 +107,25 @@ function ns.AttributeNote(stat, amount, classToken, labels, level)
 		return nil
 	end
 	return Join()
+end
+
+-- Attack power on an item, as the Strength or Agility that gives the same
+-- melee attack power. Agility is included only when the class gets melee
+-- attack power from it. Armor and ranged attack power stay on the Agility line.
+function ns.AttackPowerNote(amount, classToken, labels)
+	local row = AP[classToken]
+	if not row or type(amount) ~= "number" or amount == 0 then
+		return nil
+	end
+	labels = labels or DEFAULT_LABELS
+	noteCount = 0
+	if row.str > 0 then
+		AddBit(amount / row.str, labels.strength)
+	end
+	if row.agiMelee > 0 then
+		AddBit(amount / row.agiMelee, labels.agility)
+	end
+	return Join(" or ")
 end
 
 -- Mana per 5 seconds from one point of Spirit, from the character's own
@@ -214,6 +236,9 @@ function ns.StatNote(match, snapshot)
 	end
 	if match.stat == "strength" or match.stat == "agility" then
 		return ns.AttributeNote(match.stat, match.amount, snapshot.class, LabelsOf(snapshot), snapshot.level)
+	end
+	if match.stat == "attackPower" then
+		return ns.AttackPowerNote(match.amount, snapshot.class, LabelsOf(snapshot))
 	end
 	if match.stat == "mp5" then
 		return ns.SpiritNote(match.amount, snapshot)

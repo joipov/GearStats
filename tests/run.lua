@@ -52,6 +52,8 @@ local LABELS = {
 	rap = "Ranged Attack Power",
 	armor = "Armor",
 	spirit = "Spirit",
+	strength = "Strength",
+	agility = "Agility",
 }
 
 local function warrior()
@@ -186,6 +188,18 @@ end)
 
 test("paladin agility is armor", function()
 	eq(ns.AttributeNote("agility", 10, "PALADIN", LABELS, 30), "(20 Armor)")
+end)
+
+test("attack power is strength, and agility when the class gets melee attack power from it", function()
+	eq(ns.AttackPowerNote(28, "WARRIOR", LABELS), "(14 Strength)")
+	eq(ns.AttackPowerNote(15, "WARRIOR", LABELS), "(7.5 Strength)")
+	eq(ns.AttackPowerNote(28, "ROGUE", LABELS), "(28 Strength or 28 Agility)")
+	eq(ns.AttackPowerNote(28, "HUNTER", LABELS), "(28 Strength or 28 Agility)")
+	eq(ns.AttackPowerNote(6, "PRIEST", LABELS), "(6 Strength)")
+	local text, green = ns.PresentLine("Equip: +28 Attack Power.", true, true, warrior())
+	eq(text, "+28 Attack Power |cff808080(14 Strength)|r")
+	eq(green, true)
+	eq(ns.PresentLine(text, true, true, warrior()), nil)
 end)
 
 test("paladin crit checkpoints are not guessed", function()

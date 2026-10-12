@@ -162,6 +162,8 @@ function ns.RefreshSnapshot()
 			rap = "Ranged Attack Power",
 			armor = Label("ARMOR", "Armor"),
 			spirit = Label("SPELL_STAT5_NAME", "Spirit"),
+			strength = Label("SPELL_STAT1_NAME", "Strength"),
+			agility = Label("SPELL_STAT2_NAME", "Agility"),
 		}
 	end
 

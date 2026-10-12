@@ -41,6 +41,18 @@ end
 
 ns.Print = Print
 
+function ns.Debug(...)
+	if not (ns.db and ns.db.debug) then
+		return
+	end
+	local count = select("#", ...)
+	local parts = {}
+	for i = 1, count do
+		parts[i] = tostring(select(i, ...))
+	end
+	Print(table.concat(parts, " "))
+end
+
 function ns.Welcome()
 	local title = C_AddOns.GetAddOnMetadata(ADDON_NAME, "Title") or "Gear Stats"
 	local version = C_AddOns.GetAddOnMetadata(ADDON_NAME, "Version") or "?"

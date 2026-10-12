@@ -55,7 +55,7 @@ function ns.InitOptions()
 	local minimapCheckbox = Settings.CreateCheckbox(
 		category,
 		minimapSetting,
-		"Button on the minimap. Opens settings. Ellesmere puts it with the other addon buttons."
+		"Button on the minimap. Opens settings."
 	)
 
 	local shortenSetting = Settings.RegisterAddOnSetting(

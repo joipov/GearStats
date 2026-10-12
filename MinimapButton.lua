@@ -2,7 +2,7 @@ local ADDON_NAME, ns = ...
 
 -- Minimap button and addon compartment. Uses LibDBIcon when another addon has
 -- loaded it. Otherwise builds a button named LibDBIcon10_<addon>, the frame
--- Ellesmere, ElvUI, and other button collectors look for. Both read and write
+-- button collectors look for. Both read and write
 -- db.minimapIcon.
 
 local TITLE = "Gear Stats"

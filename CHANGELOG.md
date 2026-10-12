@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.0.15
+
+The minimap button tooltip is shorter.
+
+### Changed
+
+- The minimap button tooltip says the button opens settings.
+
+## 1.0.14
+
+Same stat lines. Chat output matches the other Joipov addons.
+
+### Changed
+
+- Status text goes through the shared print helper. Debug lines stay silent unless debug is turned on.
+
 ## 1.0.13
 
 The mana note beside Spirit is blue.

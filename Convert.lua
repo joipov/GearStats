@@ -106,14 +106,9 @@ function ns.AttributeNote(stat, amount, classToken, labels, level)
 	return Join()
 end
 
--- atRest and casting are mana per second from GetManaRegen. retention is the
--- share of Spirit regen kept while casting, 0 to 1. Returns the Spirit that
--- matches itemMP5 at rest, the Spirit that matches it while casting, and
--- whether Spirit adds nothing while casting. Nil when the rate cannot be split.
-function ns.SpiritForMP5(itemMP5, atRest, casting, spirit, retention)
-	if type(itemMP5) ~= "number" or itemMP5 == 0 then
-		return nil
-	end
+-- Mana per 5 seconds from one point of Spirit, from the character's own
+-- regen. Nil when flat mana and Spirit cannot be split.
+local function MP5PerSpirit(atRest, casting, spirit, retention)
 	if type(atRest) ~= "number" or type(casting) ~= "number" then
 		return nil
 	end
@@ -127,15 +122,46 @@ function ns.SpiritForMP5(itemMP5, atRest, casting, spirit, retention)
 	if spiritPerSec <= 0 then
 		return nil
 	end
-	local mp5PerSpirit = spiritPerSec * 5 / spirit
-	if mp5PerSpirit <= 0 then
+	local per = spiritPerSec * 5 / spirit
+	if per <= 0 then
 		return nil
 	end
-	local atRestSpirit = itemMP5 / mp5PerSpirit
+	return per
+end
+
+-- atRest and casting are mana per second from GetManaRegen. retention is the
+-- share of Spirit regen kept while casting, 0 to 1. Returns the Spirit that
+-- matches itemMP5 at rest, the Spirit that matches it while casting, and
+-- whether Spirit adds nothing while casting. Nil when the rate cannot be split.
+function ns.SpiritForMP5(itemMP5, atRest, casting, spirit, retention)
+	if type(itemMP5) ~= "number" or itemMP5 == 0 then
+		return nil
+	end
+	local per = MP5PerSpirit(atRest, casting, spirit, retention)
+	if not per then
+		return nil
+	end
+	local atRestSpirit = itemMP5 / per
 	if retention == 0 then
 		return atRestSpirit, nil, true
 	end
 	return atRestSpirit, atRestSpirit / retention, false
+end
+
+-- The mana per 5 seconds one item's Spirit is worth, at rest and while casting.
+function ns.MP5ForSpirit(itemSpirit, atRest, casting, spirit, retention)
+	if type(itemSpirit) ~= "number" or itemSpirit == 0 then
+		return nil
+	end
+	local per = MP5PerSpirit(atRest, casting, spirit, retention)
+	if not per then
+		return nil
+	end
+	local atRestMP5 = itemSpirit * per
+	if retention == 0 then
+		return atRestMP5, nil, true
+	end
+	return atRestMP5, atRestMP5 * retention, false
 end
 
 function ns.SpiritNote(itemMP5, snapshot)
@@ -163,6 +189,31 @@ function ns.SpiritNote(itemMP5, snapshot)
 	return tilde .. "(" .. FormatNumber(atRest) .. " " .. spirit .. " at rest, " .. second .. ")"
 end
 
+function ns.ManaNote(itemSpirit, snapshot)
+	if not snapshot or not snapshot.hasMana then
+		return nil
+	end
+	local atRest, whileCasting, none = ns.MP5ForSpirit(
+		itemSpirit,
+		snapshot.atRest,
+		snapshot.casting,
+		snapshot.spirit,
+		snapshot.retention
+	)
+	if not atRest then
+		return nil
+	end
+	local label = "Mana per 5 sec"
+	local tilde = snapshot.approximate and "~" or ""
+	local second
+	if none then
+		second = label .. " adds nothing while casting"
+	else
+		second = FormatNumber(whileCasting) .. " " .. label .. " while casting"
+	end
+	return tilde .. "(" .. FormatNumber(atRest) .. " " .. label .. " at rest, " .. second .. ")"
+end
+
 function ns.StatNote(match, snapshot)
 	if not match or not snapshot then
 		return nil
@@ -172,6 +223,9 @@ function ns.StatNote(match, snapshot)
 	end
 	if match.stat == "mp5" then
 		return ns.SpiritNote(match.amount, snapshot)
+	end
+	if match.stat == "spirit" then
+		return ns.ManaNote(match.amount, snapshot)
 	end
 	return nil
 end

@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.3
+
+Spirit shows the mana per 5 seconds it is worth for your character.
+
+### Added
+
+- A Spirit line shows mana per 5 seconds at rest and while casting, from your own regen.
+
 ## 1.0.2
 
 Healing and spell damage stay separate. A line that names both keeps both numbers.

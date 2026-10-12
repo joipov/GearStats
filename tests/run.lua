@@ -232,6 +232,37 @@ test("full retention or a missing rate omits the spirit note", function()
 	eq(ns.SpiritNote(5, warrior()), nil)
 end)
 
+test("spirit shows mana per 5 at 33 percent retention", function()
+	local atRest, whileCasting, none = ns.MP5ForSpirit(6, 100.4, 33.4, 100, 0.33)
+	near(atRest, 30, "at rest")
+	near(whileCasting, 9.9, "while casting")
+	eq(none, false, "none")
+	eq(ns.ManaNote(6, priest()), "(30 Mana per 5 sec at rest, 9.9 Mana per 5 sec while casting)")
+	local text, green = ns.PresentLine("+6 Spirit", true, true, priest())
+	eq(text, "+6 Spirit |cff808080(30 Mana per 5 sec at rest, 9.9 Mana per 5 sec while casting)|r")
+	eq(green, false)
+end)
+
+test("spirit with no retention while casting", function()
+	eq(
+		ns.ManaNote(6, priest({ casting = 0.4, retention = 0 })),
+		"(30 Mana per 5 sec at rest, Mana per 5 sec adds nothing while casting)"
+	)
+end)
+
+test("a missing regen reading omits the mana note", function()
+	eq(ns.MP5ForSpirit(6, 100, 100, 100, 1), nil)
+	eq(ns.MP5ForSpirit(6, 10, 1, 0, 0), nil)
+	local missing = priest()
+	missing.atRest = nil
+	eq(ns.ManaNote(6, missing), nil)
+	eq(ns.ManaNote(6, warrior()), nil)
+	eq(
+		ns.ManaNote(6, priest({ approximate = true })),
+		"~(30 Mana per 5 sec at rest, 9.9 Mana per 5 sec while casting)"
+	)
+end)
+
 test("a stale regen reading is marked", function()
 	eq(
 		ns.SpiritNote(5, priest({ approximate = true })),

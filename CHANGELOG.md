@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.0.9
+
+Healing and spell damage are two rows, and mana per 5 seconds is a short line. Spirit shows both regen rates as one note.
+
+### Changed
+
+- A line that names both shows Healing, then Spell Damage under it.
+- `Equip: Restores 5 mana per 5 sec.` becomes `+5 mp5`.
+- A Spirit line shows `(30 / 9.9 mp5)`. The first number is at rest. The second is while casting.
+
 ## 1.0.3
 
 Spirit shows the mana per 5 seconds it is worth for your character.

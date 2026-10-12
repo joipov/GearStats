@@ -4,7 +4,7 @@ For World of Warcraft: Forever (Classic Plus).
 
 **Shorter stat lines, and what they are worth on your class.**
 
-A long green sentence such as "Equip: Restores 5 mana per 5 sec." becomes "+5 Mana per 5 sec". Strength and Agility also say what they turn into: attack power, ranged attack power, and armor, for the class you are playing. Mana per 5 seconds says how much Spirit that is at rest, and how much it is while you are casting. The second number follows the five-second rule and your meditation talent, so a priest who keeps a third of their regen while casting sees about three times the Spirit there.
+A long green sentence such as "Equip: Restores 5 mana per 5 sec." becomes "+5 mp5". A sentence that names both healing and spell damage becomes two lines, healing first. Strength and Agility say what they turn into: attack power, ranged attack power, and armor, for the class you are playing. Spirit shows `(30 / 9.9 mp5)`, at rest then while casting. Mana per 5 seconds says how much Spirit that is, the same way. The split follows the five-second rule and your meditation talent.
 
 `Use:` and `Chance on hit:` are left as the game wrote them.
 

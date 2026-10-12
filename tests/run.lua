@@ -125,16 +125,17 @@ test("long crit and spell crit shorten", function()
 end)
 
 test("long mana per 5 shortens", function()
-	eq(shortened("Equip: Restores 5 mana per 5 sec."), "+5 Mana per 5 sec")
+	eq(shortened("Equip: Restores 5 mana per 5 sec."), "+5 mp5")
+	eq(shortened("Equip: Restores 5 Mana per 5 sec."), "+5 mp5")
 end)
 
 test("set prefix is kept", function()
-	eq(shortened("Set: Restores 4 mana per 5 sec."), "Set: +4 Mana per 5 sec")
+	eq(shortened("Set: Restores 4 mana per 5 sec."), "Set: +4 mp5")
 end)
 
 test("healing and spell damage stay separate", function()
-	eq(shortened("Equip: Increases damage and healing done by magical spells and effects by up to 12."), "+12 Spell Damage, +12 Healing")
-	eq(shortened("Equip: Increases healing done by up to 48 and damage done by up to 16 for all magical spells and effects."), "+48 Healing, +16 Spell Damage")
+	eq(shortened("Equip: Increases damage and healing done by magical spells and effects by up to 12."), "+12 Healing\n+12 Spell Damage")
+	eq(shortened("Equip: Increases healing done by up to 48 and damage done by up to 16 for all magical spells and effects."), "+48 Healing\n+16 Spell Damage")
 	eq(shortened("Equip: Increases damage done by magical spells and effects by up to 16."), "+16 Spell Damage")
 	eq(shortened("Equip: Increases healing done by spells and effects by up to 48."), "+48 Healing")
 	eq(shortened("Equip: Increases damage done by Fire spells and effects by up to 20."), "+20 Fire Spell Damage")
@@ -237,16 +238,16 @@ test("spirit shows mana per 5 at 33 percent retention", function()
 	near(atRest, 30, "at rest")
 	near(whileCasting, 9.9, "while casting")
 	eq(none, false, "none")
-	eq(ns.ManaNote(6, priest()), "(30 Mana per 5 sec at rest, 9.9 Mana per 5 sec while casting)")
+	eq(ns.ManaNote(6, priest()), "(30 / 9.9 mp5)")
 	local text, green = ns.PresentLine("+6 Spirit", true, true, priest())
-	eq(text, "+6 Spirit |cff808080(30 Mana per 5 sec at rest, 9.9 Mana per 5 sec while casting)|r")
+	eq(text, "+6 Spirit |cff808080(30 / 9.9 mp5)|r")
 	eq(green, false)
 end)
 
 test("spirit with no retention while casting", function()
 	eq(
 		ns.ManaNote(6, priest({ casting = 0.4, retention = 0 })),
-		"(30 Mana per 5 sec at rest, Mana per 5 sec adds nothing while casting)"
+		"(30 / 0 mp5)"
 	)
 end)
 
@@ -259,7 +260,7 @@ test("a missing regen reading omits the mana note", function()
 	eq(ns.ManaNote(6, warrior()), nil)
 	eq(
 		ns.ManaNote(6, priest({ approximate = true })),
-		"~(30 Mana per 5 sec at rest, 9.9 Mana per 5 sec while casting)"
+		"~(30 / 9.9 mp5)"
 	)
 end)
 
@@ -278,7 +279,7 @@ test("present line shortens, notes, and is idempotent", function()
 	eq(ns.PresentLine(text, true, true, snapshot), nil)
 
 	local short, shortGreen = ns.PresentLine("Equip: Restores 5 mana per 5 sec.", true, true, priest())
-	eq(short, "+5 Mana per 5 sec |cff808080(1 Spirit at rest, 3 Spirit while casting)|r")
+	eq(short, "+5 mp5 |cff808080(1 Spirit at rest, 3 Spirit while casting)|r")
 	eq(shortGreen, true)
 	eq(ns.PresentLine(short, true, true, priest()), nil)
 end)

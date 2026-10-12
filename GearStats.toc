@@ -2,7 +2,7 @@
 ## Title: Gear Stats
 ## Notes: Shortens item stat lines and shows what Strength, Agility, and mana per 5 seconds are worth.
 ## Author: Joipov
-## Version: 1.0.3
+## Version: 1.0.9
 ## Category: |cff8b5cf6Joipov|r Tools
 ## SavedVariables: GearStatsDB
 ## OptionalDeps: LibStub, LibDataBroker-1.1, LibDBIcon-1.0

@@ -105,7 +105,6 @@ local LONG = {
 	{ stat = "attackPower", label = "Attack Power", percent = false, pattern = "^%+(%d+) Attack Power%.?$" },
 	{ stat = "attackPower", label = "Attack Power", percent = false, pattern = "^Increases attack power by (%d+)%.?$" },
 	{ stat = "hp5", label = "Health per 5 sec", percent = false, pattern = "^Restores (%d+) health per 5 sec%.?$" },
-	{ stat = "mp5", label = "Mana per 5 sec", percent = false, pattern = "^Restores (%d+) mana per 5 sec%.?$" },
 	{ stat = "mountSpeed", label = "Mount Speed", percent = true, pattern = "^Increases mount speed by (%d+)%%%.?$" },
 	{ stat = "strength", label = "Strength", percent = false, pattern = "^Increases your Strength by (%d+)%.?$" },
 	{ stat = "agility", label = "Agility", percent = false, pattern = "^Increases your Agility by (%d+)%.?$" },
@@ -125,11 +124,30 @@ local function Signed(sign, digits)
 	return amount
 end
 
+local function ManaText(digits, negative)
+	local sign = negative and "-" or "+"
+	return sign .. digits .. " mp5"
+end
+
 local function TryShort(rest, prefix)
-	local sign, digits = rest:match("^([%+%-])%s*(%d+)%s+[Mm]ana per 5 sec%.?$")
+	local digits = rest:match("^(%d+)%s+mp5$")
+	if digits then
+		return Hit("mp5", tonumber(digits), prefix, true, false, "mp5", ManaText(digits, false))
+	end
+	local sign
+	sign, digits = rest:match("^([%+%-])%s*(%d+)%s+mp5$")
 	local amount = sign and Signed(sign, digits)
 	if amount then
-		return Hit("mp5", amount, prefix, false, false, "Mana per 5 sec")
+		return Hit("mp5", amount, prefix, false, false, "mp5")
+	end
+	digits = rest:match("^(%d+)%s+[Mm]ana per 5 sec%.?$")
+	if digits then
+		return Hit("mp5", tonumber(digits), prefix, true, false, "mp5", ManaText(digits, false))
+	end
+	sign, digits = rest:match("^([%+%-])%s*(%d+)%s+[Mm]ana per 5 sec%.?$")
+	amount = sign and Signed(sign, digits)
+	if amount then
+		return Hit("mp5", amount, prefix, true, false, "mp5", ManaText(digits, amount < 0))
 	end
 	for i = 1, #SHORT_PATTERNS do
 		local row = SHORT_PATTERNS[i]
@@ -172,22 +190,30 @@ local function Plus(digits, label)
 	return "+" .. digits .. " " .. label
 end
 
--- One sentence can name healing and spell damage with different amounts.
--- The replacement keeps both, instead of folding them into one stat.
+-- One sentence can name healing and spell damage. Healing is the first row.
 local function TrySpell(rest, prefix)
 	local heal, damage = rest:match("^Increases healing done by up to (%d+) and damage done by up to (%d+) for all magical spells and effects%.?$")
 	if heal then
-		return Hit("healing", tonumber(heal), prefix, true, false, "Healing", Plus(heal, "Healing") .. ", " .. Plus(damage, "Spell Damage"))
+		return Hit("healing", tonumber(heal), prefix, true, false, "Healing", Plus(heal, "Healing") .. "\n" .. Plus(damage, "Spell Damage"))
 	end
 	local both = rest:match("^Increases damage and healing done by magical spells and effects by up to (%d+)%.?$")
 	if both then
-		return Hit("spellDamage", tonumber(both), prefix, true, false, "Spell Damage", Plus(both, "Spell Damage") .. ", " .. Plus(both, "Healing"))
+		return Hit("healing", tonumber(both), prefix, true, false, "Healing", Plus(both, "Healing") .. "\n" .. Plus(both, "Spell Damage"))
+	end
+	return nil
+end
+
+local function TryMana(rest, prefix)
+	local digits = rest:match("^[Rr]estores (%d+) [Mm]ana per 5 sec%.?$")
+		or rest:match("^[Rr]estores (%d+) [Mm]ana per 5 seconds%.?$")
+	if digits then
+		return Hit("mp5", tonumber(digits), prefix, true, false, "mp5", ManaText(digits, false))
 	end
 	return nil
 end
 
 local function TryLong(rest, prefix)
-	local spelled = TrySpell(rest, prefix)
+	local spelled = TrySpell(rest, prefix) or TryMana(rest, prefix)
 	if spelled then
 		return spelled
 	end

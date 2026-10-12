@@ -203,15 +203,9 @@ function ns.ManaNote(itemSpirit, snapshot)
 	if not atRest then
 		return nil
 	end
-	local label = "Mana per 5 sec"
+	local castingText = none and "0" or FormatNumber(whileCasting)
 	local tilde = snapshot.approximate and "~" or ""
-	local second
-	if none then
-		second = label .. " adds nothing while casting"
-	else
-		second = FormatNumber(whileCasting) .. " " .. label .. " while casting"
-	end
-	return tilde .. "(" .. FormatNumber(atRest) .. " " .. label .. " at rest, " .. second .. ")"
+	return tilde .. "(" .. FormatNumber(atRest) .. " / " .. castingText .. " mp5)"
 end
 
 function ns.StatNote(match, snapshot)

@@ -6,9 +6,10 @@ Target client: World of Warcraft **Forever** (`## Interface: 16001`).
 
 ## Features
 
-- A long line such as `Equip: Restores 5 mana per 5 sec.` becomes `+5 Mana per 5 sec`. `Use:` and `Chance on hit:` stay as written. A set bonus keeps its `Set:` prefix.
+- A long line such as `Equip: Restores 5 mana per 5 sec.` becomes `+5 mp5`. `Use:` and `Chance on hit:` stay as written. A set bonus keeps its `Set:` prefix.
 - Strength shows the attack power it gives your class. Agility shows attack power when the class gets it, ranged attack power for Warrior, Rogue, and Hunter, and armor (2 per point).
 - Mana per 5 seconds shows the Spirit that matches it at rest and while casting. The split is the five-second rule: spending mana is what suppresses Spirit, not being in combat. The rate comes from your character, so class, intellect, buffs, and talents are already in it. A priest with Meditation at 33% sees about three times as much Spirit while casting as at rest.
+- Spirit shows `(30 / 9.9 mp5)`. The first number is at rest. The second is while casting.
 - While a second effect also keeps Spirit regen (Mage Armor on top of a meditation talent), the higher percent is used. Those two are not added together.
 - In combat the client hides regen numbers. The last reading from outside combat is kept, with a `~` in front.
 - Crit from Agility is not shown. Forever's per-level coefficients do not match the public tables (paladin +10 Agility: 2.15% at 1, 1.72% at 10, 1.229% at 20, 0.935% at 30, 0.506% at 60), and a guessed curve would be wrong.
@@ -27,7 +28,7 @@ Loaded in TOC order; modules communicate only through the shared `ns` table.
 | File | Concern |
 | --- | --- |
 | `Patterns.lua` | Which tooltip lines are stats, and the short form |
-| `Convert.lua` | Attack power, armor, and mana-per-5 to Spirit |
+| `Convert.lua` | Attack power, armor, and the Spirit and mp5 exchange |
 | `Database.lua` | SavedVariables defaults, migrations, validation |
 | `Snapshot.lua` | Cached class, level, regen, and casting retention |
 | `Tooltip.lua` | Item tooltip rewrite |
@@ -65,15 +66,15 @@ Local zip, with the addon folder at the root, written to `.release/`:
 powershell -File package.ps1
 ```
 
-Releases: push an annotated tag (`git tag -a 1.0.0 -m "1.0.0"`). The
+Releases: push an annotated tag (`git tag -a 1.0.9 -m "1.0.9"`). The
 `Package and release` workflow runs BigWigsMods/packager, which reads the game
 version from the TOC and the manual changelog from `CHANGELOG.md`.
 The audit note is not shipped.
 
 ## Verifying in-game
 
-- Hover a green `Equip:` stat and a `+Strength` line. The long line shortens. Strength and Agility gain a parenthetical. Mana per 5 seconds names Spirit at rest and while casting.
-- A priest with Meditation: the while-casting Spirit is larger. With the talent unlearned, the line says Spirit adds nothing while casting.
+- Hover a green `Equip:` stat and a `+Strength` line. The long line shortens. A healing-and-damage sentence is two rows, healing first. `+5 mp5` names the Spirit at rest and while casting.
+- A Spirit line shows `(30 / 9.9 mp5)`. The first number is at rest. The second is while casting, and it is `0` with no retention talent.
 - `Use:` and `Chance on hit:` are unchanged.
 - `/gs` and the compartment open settings. Turning the addon off puts the original lines back.
 - In combat the Spirit note keeps its last reading and gains a `~`.

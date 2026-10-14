@@ -2,7 +2,7 @@
 ## Title: Gear Stats
 ## Notes: Shortens item stat lines and shows what Strength, Agility, attack power, and mana per 5 seconds are worth.
 ## Author: Joipov
-## Version: 1.0.16
+## Version: 1.0.17
 ## Category: |cff8b5cf6Joipov|r Tools
 ## IconTexture: Interface\Icons\Spell_Nature_EnchantArmor
 ## SavedVariables: GearStatsDB

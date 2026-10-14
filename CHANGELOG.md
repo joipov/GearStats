@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.17
+
+Healing Power stays above Spell Damage.
+
+### Changed
+
+- When an item has both, Healing Power is the upper line. Spell Damage stays under it.
+
 ## 1.0.16
 
 Attack power shows the Strength or Agility that matches it.

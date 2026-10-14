@@ -67,6 +67,79 @@ local function Push(text, r, g, b, right, rr, rg, rb)
 	row.rr, row.rg, row.rb = rr, rg, rb
 end
 
+-- Healing Power is the upper line when an item also has Spell Damage.
+local spellSlots = {}
+local spellKinds = {}
+local spellOrdered = {}
+
+local function SpellRowKind(text)
+	if type(text) ~= "string" then
+		return nil
+	end
+	local healing = text:find("Healing Power", 1, true) ~= nil
+	local damage = text:find("Spell Damage", 1, true) ~= nil
+	if healing and not damage then
+		return "healing"
+	end
+	if damage and not healing then
+		return "damage"
+	end
+	return nil
+end
+
+-- Moves healing rows into the higher spell slots and spell damage into the
+-- lower ones. Other rows stay put. Returns whether the order changed.
+function ns.PlaceHealingAboveDamage(rowList, count)
+	if type(count) ~= "number" or count < 1 then
+		return false
+	end
+	local slotCount = 0
+	for i = 1, count do
+		local row = rowList[i]
+		local kind = row and SpellRowKind(row.text)
+		if kind then
+			slotCount = slotCount + 1
+			spellSlots[slotCount] = i
+			spellKinds[slotCount] = kind
+		end
+	end
+	for i = slotCount + 1, #spellSlots do
+		spellSlots[i] = nil
+		spellKinds[i] = nil
+	end
+	local seenDamage = false
+	local disordered = false
+	for i = 1, slotCount do
+		if spellKinds[i] == "damage" then
+			seenDamage = true
+		elseif seenDamage then
+			disordered = true
+			break
+		end
+	end
+	if not disordered then
+		return false
+	end
+	local placed = 0
+	for i = 1, slotCount do
+		if spellKinds[i] == "healing" then
+			placed = placed + 1
+			spellOrdered[placed] = rowList[spellSlots[i]]
+		end
+	end
+	for i = 1, slotCount do
+		if spellKinds[i] == "damage" then
+			placed = placed + 1
+			spellOrdered[placed] = rowList[spellSlots[i]]
+		end
+	end
+	for i = 1, slotCount do
+		rowList[spellSlots[i]] = spellOrdered[i]
+		spellOrdered[i] = nil
+	end
+	return true
+end
+
 local function WriteRows(tooltip)
 	while tooltip:NumLines() < rowCount do
 		tooltip:AddDoubleLine(" ", " ")
@@ -140,6 +213,9 @@ function ns.OnItemTooltip(tooltip)
 		else
 			Push(shown, r, g, b, right, rr, rg, rb)
 		end
+	end
+	if ns.PlaceHealingAboveDamage(rows, rowCount) then
+		changed = true
 	end
 	if not changed then
 		return

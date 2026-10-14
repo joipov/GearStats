@@ -14,6 +14,7 @@ end
 load("Patterns.lua")
 load("Convert.lua")
 load("Database.lua")
+load("Tooltip.lua")
 
 local passed, failed = 0, 0
 
@@ -143,6 +144,47 @@ test("healing and spell damage stay separate", function()
 	eq(shortened("Equip: +48 Healing."), "+48 Healing Power")
 	eq(shortened("+48 Healing Power"), "+48 Healing Power")
 	eq(shortened("Equip: Increases damage done by Fire spells and effects by up to 20."), "+20 Fire Spell Damage")
+end)
+
+test("healing power stays above spell damage", function()
+	local damage = { text = "+16 Spell Damage", r = 1 }
+	local healing = { text = "+48 Healing Power", r = 2 }
+	local rows = { damage, healing }
+	eq(ns.PlaceHealingAboveDamage(rows, 2), true)
+	eq(rows[1], healing)
+	eq(rows[2], damage)
+
+	local alreadyHealing = { text = "+48 Healing Power" }
+	local alreadyDamage = { text = "+16 Spell Damage" }
+	rows = { alreadyHealing, alreadyDamage }
+	eq(ns.PlaceHealingAboveDamage(rows, 2), false)
+	eq(rows[1], alreadyHealing)
+	eq(rows[2], alreadyDamage)
+
+	local betweenDamage = { text = "+16 Spell Damage" }
+	local intellect = { text = "+10 Intellect" }
+	local betweenHealing = { text = "+48 Healing Power" }
+	rows = { betweenDamage, intellect, betweenHealing }
+	eq(ns.PlaceHealingAboveDamage(rows, 3), true)
+	eq(rows[1], betweenHealing)
+	eq(rows[2], intellect)
+	eq(rows[3], betweenDamage)
+
+	local fire = { text = "+20 Fire Spell Damage" }
+	local schoolHealing = { text = "+48 Healing Power" }
+	rows = { fire, schoolHealing }
+	eq(ns.PlaceHealingAboveDamage(rows, 2), true)
+	eq(rows[1], schoolHealing)
+	eq(rows[2], fire)
+
+	local onlyHealing = { text = "+48 Healing Power" }
+	rows = { onlyHealing }
+	eq(ns.PlaceHealingAboveDamage(rows, 1), false)
+	eq(rows[1], onlyHealing)
+	local onlyDamage = { text = "+16 Spell Damage" }
+	rows = { onlyDamage }
+	eq(ns.PlaceHealingAboveDamage(rows, 1), false)
+	eq(rows[1], onlyDamage)
 end)
 
 test("defense, dodge, weapon skill, and attack power shorten", function()

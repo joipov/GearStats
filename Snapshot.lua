@@ -126,10 +126,18 @@ local function ScanPassives()
 end
 
 local function ScanAuras()
+	-- GetAuraDataByIndex throws while auras are secret, before a secret check can run.
+	if C_Secrets and C_Secrets.ShouldAurasBeSecret and C_Secrets.ShouldAurasBeSecret() then
+		return nil, false
+	end
 	local best = nil
 	local C_Spell = C_Spell
+	local GetAuraDataByIndex = C_UnitAuras.GetAuraDataByIndex
 	for index = 1, 40 do
-		local aura = C_UnitAuras.GetAuraDataByIndex("player", index, "HELPFUL")
+		local ok, aura = pcall(GetAuraDataByIndex, "player", index, "HELPFUL")
+		if not ok then
+			return nil, false
+		end
 		if not aura then
 			break
 		end

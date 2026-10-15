@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.18
+
+The stat snapshot no longer errors while auras are hidden.
+
+### Fixed
+
+- Aura scans are skipped while auras are secret, so the snapshot refresh does not throw.
+
 ## 1.0.17
 
 Healing Power stays above Spell Damage.

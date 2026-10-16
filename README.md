@@ -7,6 +7,9 @@ Target client: World of Warcraft **Forever** (`## Interface: 16001`).
 ## Features
 
 - A long line such as `Equip: Restores 5 mana per 5 sec.` becomes `+5 mp5`. Healing is called Healing Power. `Use:` and `Chance on hit:` stay as written. A set bonus keeps its `Set:` prefix.
+- `Increases attack and casting speed by 1%.` becomes `+1% Haste`. A bonus against one creature type becomes `+12 Spell Damage vs Undead` or `+9 Attack Power vs Humanoids`.
+- `Enchanted: Stamina +1 and Armor +8` becomes `+1 Stamina and +8 Armor`. A named enchant stays as written.
+- In the "if you replace this item" summary, mana regen is `mp5` and health regen is `Health per 5 sec`. The summary keeps the game's color, and it does not get the Strength or Spirit notes.
 - Strength shows the attack power it gives your class. Agility shows attack power when the class gets it, ranged attack power for Warrior, Rogue, and Hunter, and armor (2 per point).
 - Attack power shows the Strength that matches it. Rogue and Hunter also see the Agility. That Agility figure is the melee attack power only. Armor, crit, and ranged attack power stay on the Agility line.
 - Mana per 5 seconds shows the Spirit that matches it at rest and while casting. The split is the five-second rule: spending mana is what suppresses Spirit, not being in combat. The rate comes from your character, so class, intellect, buffs, and talents are already in it. A priest with Meditation at 33% sees about three times as much Spirit while casting as at rest.
@@ -74,7 +77,7 @@ The audit note is not shipped.
 
 ## Verifying in-game
 
-- Hover a green `Equip:` stat and a `+Strength` line. The long line shortens and stays green. A healing-and-damage sentence is two rows, Healing Power first. `+5 mp5` names the Spirit at rest and while casting. `+28 Attack Power` names the Strength that matches it, and the Agility for a rogue or hunter.
+- Hover a green `Equip:` stat and a `+Strength` line. The long line shortens and stays green. A healing-and-damage sentence is two rows, Healing Power first. `+5 mp5` names the Spirit at rest and while casting. `+28 Attack Power` names the Strength that matches it, and the Agility for a rogue or hunter. Haste, a creature bonus, and `Enchanted: Stamina +1 and Armor +8` shorten too. The replace-item summary says `mp5`.
 - A Spirit line shows `(30 / 9.9 mp5)`. The first number is at rest. The second is while casting, and it is `0` with no retention talent.
 - `Use:` and `Chance on hit:` are unchanged.
 - `/gs` and the compartment open settings. Turning the addon off puts the original lines back.

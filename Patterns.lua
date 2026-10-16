@@ -94,8 +94,11 @@ local LONG = {
 	{ stat = "spellHit", label = "Spell Hit", percent = true, pattern = "^Improves your chance to hit with spells by (%d+)%%%.?$" },
 	{ stat = "hit", label = "Hit", percent = true, pattern = "^Improves your chance to hit by (%d+)%%%.?$" },
 	{ stat = "spellPen", label = "Spell Penetration", percent = false, pattern = "^Decreases the magical resistances of your spell targets by (%d+)%.?$" },
+	{ stat = "spellPen", label = "Spell Penetration", percent = false, pattern = "^Your spells pierce (%d+) magical resistances?%.?$" },
 	{ stat = "spellDamage", label = "Spell Damage", percent = false, pattern = "^Increases damage done by magical spells and effects by up to (%d+)%.?$" },
+	{ stat = "healing", label = "Healing Power", percent = false, pattern = "^Increases healing done by magical spells and effects by up to (%d+)%.?$" },
 	{ stat = "healing", label = "Healing Power", percent = false, pattern = "^Increases healing done by spells and effects by up to (%d+)%.?$" },
+	{ stat = "healing", label = "Healing Power", percent = false, pattern = "^Increases healing done by up to (%d+)%.?$" },
 	{ stat = "healing", label = "Healing Power", percent = false, pattern = "^%+(%d+) Healing Spells%.?$" },
 	{ stat = "healing", label = "Healing Power", percent = false, pattern = "^%+(%d+) Healing%.?$" },
 	{ stat = "blockChance", label = "Block Chance", percent = true, pattern = "^Increases your chance to block attacks with a shield by (%d+)%%%.?$" },
@@ -103,10 +106,14 @@ local LONG = {
 	{ stat = "dodge", label = "Dodge", percent = true, pattern = "^Increases your chance to dodge an attack by (%d+)%%%.?$" },
 	{ stat = "parry", label = "Parry", percent = true, pattern = "^Increases your chance to parry an attack by (%d+)%%%.?$" },
 	{ stat = "defense", label = "Defense", percent = false, pattern = "^Increased Defense %+(%d+)%.?$" },
+	{ stat = "defense", label = "Defense", percent = false, pattern = "^Increases defense by (%d+)%.?$" },
 	{ stat = "attackPower", label = "Attack Power", percent = false, pattern = "^%+(%d+) Attack Power%.?$" },
 	{ stat = "attackPower", label = "Attack Power", percent = false, pattern = "^%+(%d+) Power%.?$" },
 	{ stat = "attackPower", label = "Attack Power", percent = false, pattern = "^Increases attack power by (%d+)%.?$" },
+	{ stat = "rangedAttackPower", label = "Ranged Attack Power", percent = false, pattern = "^Increases ranged attack power by (%d+)%.?$" },
 	{ stat = "hp5", label = "Health per 5 sec", percent = false, pattern = "^Restores (%d+) health per 5 sec%.?$" },
+	{ stat = "hp5", label = "Health per 5 sec", percent = false, pattern = "^Restores (%d+) health every 5 sec%.?$" },
+	{ stat = "hp5", label = "Health per 5 sec", percent = false, pattern = "^Restores (%d+) health every 5 seconds%.?$" },
 	{ stat = "mountSpeed", label = "Mount Speed", percent = true, pattern = "^Increases mount speed by (%d+)%%%.?$" },
 	{ stat = "strength", label = "Strength", percent = false, pattern = "^Increases your Strength by (%d+)%.?$" },
 	{ stat = "agility", label = "Agility", percent = false, pattern = "^Increases your Agility by (%d+)%.?$" },
@@ -129,6 +136,19 @@ end
 local function ManaText(digits, negative)
 	local sign = negative and "-" or "+"
 	return sign .. digits .. " mp5"
+end
+
+-- "1.00" is "1". "1.50" is "1.5". An integer stays an integer.
+local function NumberText(digits)
+	local amount = tonumber(digits)
+	if not amount then
+		return digits
+	end
+	if amount == math.floor(amount) then
+		return string.format("%d", amount)
+	end
+	local text = digits:gsub("0+$", "")
+	return (text:gsub("%.$", ""))
 end
 
 local function TryShort(rest, prefix)
@@ -155,6 +175,11 @@ local function TryShort(rest, prefix)
 	amount = sign and Signed(sign, digits)
 	if amount then
 		return Hit("healing", amount, prefix, false, false, "Healing Power")
+	end
+	sign, digits = rest:match("^([%+%-])%s*(%d+)%s+Ranged Attack Power%.?$")
+	amount = sign and Signed(sign, digits)
+	if amount then
+		return Hit("rangedAttackPower", amount, prefix, false, false, "Ranged Attack Power")
 	end
 	for i = 1, #SHORT_PATTERNS do
 		local row = SHORT_PATTERNS[i]
@@ -219,8 +244,32 @@ local function TryMana(rest, prefix)
 	return nil
 end
 
+local function TryHaste(rest, prefix)
+	local digits = rest:match("^Increases attack and casting speed by (%d+%.?%d*)%%%.?$")
+	local amount = digits and tonumber(digits)
+	if not amount then
+		return nil
+	end
+	return Hit("haste", amount, prefix, true, true, "Haste", "+" .. NumberText(digits) .. "% Haste")
+end
+
+local function TryCreature(rest, prefix)
+	local creature, digits = rest:match("^Increases damage done to (.-) by magical spells and effects by up to (%d+)%.?$")
+	if creature and creature ~= "" and digits then
+		return Hit("creatureSpell", tonumber(digits), prefix, true, false, "Spell Damage vs " .. creature)
+	end
+	digits, creature = rest:match("^%+(%d+) Attack Power against (.-)%.?$")
+	if not digits then
+		digits, creature = rest:match("^%+(%d+) Attack Power when fighting (.-)%.?$")
+	end
+	if digits and creature and creature ~= "" then
+		return Hit("creatureAttackPower", tonumber(digits), prefix, true, false, "Attack Power vs " .. creature)
+	end
+	return nil
+end
+
 local function TryLong(rest, prefix)
-	local spelled = TrySpell(rest, prefix) or TryMana(rest, prefix)
+	local spelled = TrySpell(rest, prefix) or TryMana(rest, prefix) or TryHaste(rest, prefix)
 	if spelled then
 		return spelled
 	end
@@ -231,7 +280,78 @@ local function TryLong(rest, prefix)
 			return Hit(row.stat, tonumber(digits), prefix, true, row.percent, row.label)
 		end
 	end
-	return TrySchool(rest, prefix) or TryWeapon(rest, prefix)
+	return TrySchool(rest, prefix) or TryWeapon(rest, prefix) or TryCreature(rest, prefix)
+end
+
+local function EnchantPiece(part)
+	local name, digits, percent = part:match("^%s*(.-)%s+%+(%d+%.?%d*)(%%?)%s*$")
+	if not name or name == "" then
+		return nil
+	end
+	return "+" .. NumberText(digits) .. percent .. " " .. name
+end
+
+-- Rewrites "Enchanted: Stamina +1 and Armor +8". A piece that is only a name
+-- leaves the whole line alone.
+function ns.FormatEnchant(text)
+	if type(text) ~= "string" then
+		return nil
+	end
+	local plain = text:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", "")
+	local body = plain:match("^%s*Enchanted:%s*(.-)%s*$")
+	if not body or body == "" then
+		return nil
+	end
+	local out = {}
+	local count = 0
+	local pos = 1
+	while true do
+		local andAt, andEnd = body:find(" and ", pos, true)
+		local slashAt, slashEnd = body:find("/", pos, true)
+		local sepAt, sepEnd = andAt, andEnd
+		if slashAt and (not sepAt or slashAt < sepAt) then
+			sepAt, sepEnd = slashAt, slashEnd
+		end
+		local chunk
+		local separator = ""
+		if not sepAt then
+			chunk = body:sub(pos)
+		else
+			chunk = body:sub(pos, sepAt - 1)
+			separator = body:sub(sepAt, sepEnd)
+		end
+		local piece = EnchantPiece(chunk)
+		if not piece then
+			return nil
+		end
+		count = count + 1
+		out[count] = piece .. separator
+		if not sepAt then
+			break
+		end
+		pos = sepEnd + 1
+	end
+	if count < 1 then
+		return nil
+	end
+	return table.concat(out)
+end
+
+-- The replace-item summary uses the long regen names. Keep the sign.
+function ns.FormatCompare(text)
+	if type(text) ~= "string" then
+		return nil
+	end
+	local plain = text:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", "")
+	local sign, digits = plain:match("^%s*([%+%-])%s*(%d+%.?%d*) Mana Regeneration per 5 sec%.?%s*$")
+	if sign then
+		return sign .. NumberText(digits) .. " mp5"
+	end
+	sign, digits = plain:match("^%s*([%+%-])%s*(%d+%.?%d*) Health Regeneration per 5 sec%.?%s*$")
+	if sign then
+		return sign .. NumberText(digits) .. " Health per 5 sec"
+	end
+	return nil
 end
 
 -- The returned table is reused. Read it before the next call.

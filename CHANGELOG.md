@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.0.19
+
+Haste, creature bonuses, and enchant lines shorten. The replace-item summary uses the same regen names.
+
+### Added
+
+- `Increases attack and casting speed by 1%.` becomes `+1% Haste`. A fractional percent keeps one decimal, and `1.00` is shown as `1`.
+- A bonus against one creature type becomes `+12 Spell Damage vs Undead` or `+9 Attack Power vs Humanoids`.
+- `Enchanted: Stamina +1 and Armor +8` becomes `+1 Stamina and +8 Armor`. A named enchant stays as written.
+- In the replace-item summary, mana regen is `mp5` and health regen is `Health per 5 sec`.
+
+### Changed
+
+- Ranged attack power, health every 5 seconds, `Increases defense by`, spell resistance pierce, and the shorter healing sentences shorten the same way as the other stats.
+
 ## 1.0.18
 
 The stat snapshot no longer errors while auras are hidden.

@@ -128,3 +128,10 @@ end)
 eventFrame:RegisterEvent("ADDON_LOADED")
 
 TooltipDataProcessor.AddTooltipPostCall(Enum.TooltipDataType.Item, ns.OnItemTooltip)
+if Enum.TooltipDataType.Spell then
+	TooltipDataProcessor.AddTooltipPostCall(Enum.TooltipDataType.Spell, function(tooltip)
+		if ns.TooltipHasGearLine(tooltip) then
+			ns.OnItemTooltip(tooltip)
+		end
+	end)
+end

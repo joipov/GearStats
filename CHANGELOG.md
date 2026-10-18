@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.20
+
+More Forever haste wordings and maximum Energy shorten.
+
+### Added
+
+- `Improves your haste by` and `Increases your haste by` become `+% Haste`.
+- `Increases your maximum Energy by N` becomes `+N Maximum Energy`.
+
 ## 1.0.19
 
 Haste, creature bonuses, and enchant lines shorten. The replace-item summary uses the same regen names.

@@ -115,6 +115,7 @@ local LONG = {
 	{ stat = "hp5", label = "Health per 5 sec", percent = false, pattern = "^Restores (%d+) health every 5 sec%.?$" },
 	{ stat = "hp5", label = "Health per 5 sec", percent = false, pattern = "^Restores (%d+) health every 5 seconds%.?$" },
 	{ stat = "mountSpeed", label = "Mount Speed", percent = true, pattern = "^Increases mount speed by (%d+)%%%.?$" },
+	{ stat = "maxEnergy", label = "Maximum Energy", percent = false, pattern = "^Increases your maximum Energy by (%d+)%.?$" },
 	{ stat = "strength", label = "Strength", percent = false, pattern = "^Increases your Strength by (%d+)%.?$" },
 	{ stat = "agility", label = "Agility", percent = false, pattern = "^Increases your Agility by (%d+)%.?$" },
 	{ stat = "stamina", label = "Stamina", percent = false, pattern = "^Increases your Stamina by (%d+)%.?$" },
@@ -246,6 +247,8 @@ end
 
 local function TryHaste(rest, prefix)
 	local digits = rest:match("^Increases attack and casting speed by (%d+%.?%d*)%%%.?$")
+		or rest:match("^[Ii]mproves your haste by (%d+%.?%d*)%%%.?$")
+		or rest:match("^[Ii]ncreases your haste by (%d+%.?%d*)%%%.?$")
 	local amount = digits and tonumber(digits)
 	if not amount then
 		return nil

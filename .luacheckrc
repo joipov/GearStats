@@ -32,6 +32,7 @@ read_globals = {
 	"canaccesstable",
 
 	"C_AddOns",
+	"C_Secrets",
 	"C_Spell",
 	"C_SpellBook",
 	"C_Timer",

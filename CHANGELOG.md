@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.0.21
+
+One hidden tooltip line no longer costs the whole item its short lines.
+
+### Fixed
+
+- A tooltip line hidden in combat is kept as the game wrote it, and the rest of the item still shortens, instead of the whole tooltip staying long.
+- The rewrite no longer writes to hidden, scanner, or protected tooltips, and no longer surfaces a tooltip that is not on screen.
+
+### Changed
+
+- **Minimap button** stays active while the addon is off.
+- The README now says the long stat sentences are matched in English and stay as written on other locales.
+
 ## 1.0.20
 
 More Forever haste wordings and maximum Energy shorten.

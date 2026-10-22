@@ -2,7 +2,7 @@
 ## Title: Gear Stats
 ## Notes: Shortens item stat lines and shows what Strength, Agility, attack power, and mana per 5 seconds are worth.
 ## Author: Joipov
-## Version: 1.0.20
+## Version: 1.0.21
 ## Category: |cff8b5cf6Joipov|r Tools
 ## IconTexture: Interface\Icons\Spell_Nature_EnchantArmor
 ## SavedVariables: GearStatsDB
@@ -10,10 +10,10 @@
 ## AddonCompartmentFunc: GearStats_OnAddonCompartmentClick
 ## AddonCompartmentFuncOnEnter: GearStats_OnAddonCompartmentEnter
 ## AddonCompartmentFuncOnLeave: GearStats_OnAddonCompartmentLeave
-## X-License: MIT
-## X-Website: https://github.com/joipov/GearStats
 ## AllowLoadGameType: forever
 ## ExcludeLoadGameType: standard, classic
+## X-License: MIT
+## X-Website: https://github.com/joipov/GearStats
 
 Database.lua
 Patterns.lua

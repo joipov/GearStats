@@ -52,7 +52,7 @@ function ns.InitOptions()
 	minimapSetting:SetValueChangedCallback(function()
 		ns.UpdateMinimapButton()
 	end)
-	local minimapCheckbox = Settings.CreateCheckbox(
+	Settings.CreateCheckbox(
 		category,
 		minimapSetting,
 		"Button on the minimap. Opens settings."
@@ -91,7 +91,7 @@ function ns.InitOptions()
 	local function Enabled()
 		return enableSetting:GetValue()
 	end
-	minimapCheckbox:SetParentInitializer(enableCheckbox, Enabled)
+	-- The Minimap button row stays live while the addon is off (house style).
 	shortenCheckbox:SetParentInitializer(enableCheckbox, Enabled)
 	valuesCheckbox:SetParentInitializer(enableCheckbox, Enabled)
 

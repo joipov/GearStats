@@ -2,7 +2,7 @@
 
 Shortens long stat sentences on item tooltips, and adds what Strength, Agility, attack power, and mana per 5 seconds are worth for your class.
 
-Target client: World of Warcraft **Forever** (`## Interface: 16001`).
+Target client: World of Warcraft **Forever**, release client (`_forever_`, `## Interface: 16001`). The old Forever beta (`_classic_beta_`) uses the same TOC and game type.
 
 ## Features
 
@@ -18,6 +18,7 @@ Target client: World of Warcraft **Forever** (`## Interface: 16001`).
 - In combat the client hides regen numbers. The last reading from outside combat is kept, with a `~` in front.
 - Crit from Agility is not shown. Forever's per-level coefficients do not match the public tables (paladin +10 Agility: 2.15% at 1, 1.72% at 10, 1.229% at 20, 0.935% at 30, 0.506% at 60), and a guessed curve would be wrong.
 - Cat Form uses its own Agility conversion. A druid sees the class baseline, which is attack power from Strength and armor from Agility.
+- The long stat sentences are matched against their English text. On a non-English client those sentences stay as written; the short primary-stat lines use the client's own stat names.
 
 ## Commands
 
@@ -46,8 +47,10 @@ The repository lives outside the game folder; the AddOns entry is a
 directory junction to it:
 
 ```
-mklink /J "C:\Program Files (x86)\World of Warcraft\_classic_beta_\Interface\AddOns\GearStats" "D:\Repos\Joipov\GearStats"
+mklink /J "C:\Program Files (x86)\World of Warcraft\_forever_\Interface\AddOns\GearStats" "D:\Repos\Joipov\GearStats"
 ```
+
+The same link works under `_classic_beta_` if the old beta client is still installed.
 
 Static checks (no game client needed):
 

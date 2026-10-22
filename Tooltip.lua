@@ -159,6 +159,14 @@ local function Push(text, r, g, b, right, rr, rg, rb)
 	row.r, row.g, row.b = r, g, b
 	row.right = right
 	row.rr, row.rg, row.rb = rr, rg, rb
+	row.keep = nil
+end
+
+-- A row whose text cannot be read (combat secret) is kept as the client
+-- wrote it: the row count stays the same and WriteRows leaves it alone.
+local function PushKeep()
+	Push("", nil, nil, nil, nil, nil, nil, nil)
+	rows[rowCount].keep = true
 end
 
 -- Healing Power is the upper line when an item also has Spell Damage.
@@ -240,22 +248,26 @@ local function WriteRows(tooltip)
 	end
 	for i = 1, rowCount do
 		local row = rows[i]
-		local fs = readLeft[i] or FontString(tooltip, i)
-		if fs then
-			fs:SetText(row.text)
-			if row.r then
-				fs:SetTextColor(row.r, row.g, row.b)
+		-- A kept row is a line that could not be read (combat secret). Its
+		-- font strings stay exactly as the client wrote them.
+		if not row.keep then
+			local fs = readLeft[i] or FontString(tooltip, i)
+			if fs then
+				fs:SetText(row.text)
+				if row.r then
+					fs:SetTextColor(row.r, row.g, row.b)
+				end
 			end
-		end
-		local right = readRight[i] or RightString(tooltip, i)
-		if right then
-			right:SetText(row.right or "")
-			if row.right == nil or row.right == "" then
-				right:Hide()
-			else
-				right:Show()
-				if row.rr then
-					right:SetTextColor(row.rr, row.rg, row.rb)
+			local right = readRight[i] or RightString(tooltip, i)
+			if right then
+				right:SetText(row.right or "")
+				if row.right == nil or row.right == "" then
+					right:Hide()
+				else
+					right:Show()
+					if row.rr then
+						right:SetTextColor(row.rr, row.rg, row.rb)
+					end
 				end
 			end
 		end
@@ -265,6 +277,14 @@ end
 function ns.OnItemTooltip(tooltip)
 	local db = ns.db
 	if not db or not db.enabled or not tooltip or busy[tooltip] then
+		return
+	end
+	-- The post-call can hand over hidden, scanner, or protected tooltips.
+	-- Never write to or surface those.
+	if tooltip.IsForbidden and tooltip:IsForbidden() then
+		return
+	end
+	if tooltip.IsProtected and tooltip:IsProtected() then
 		return
 	end
 	if not db.shorten and not db.showValues then
@@ -286,56 +306,55 @@ function ns.OnItemTooltip(tooltip)
 			return
 		end
 		local text = fs:GetText()
-		if type(text) ~= "string" or SecretBlocked(text) then
-			ForgetLines()
-			return
-		end
 		local rightFs = RightString(tooltip, i)
 		local right = rightFs and rightFs:GetText() or nil
-		if SecretBlocked(right) then
-			ForgetLines()
-			return
-		end
 		RememberLine(i, fs, rightFs)
-		local r, g, b = ColorOf(fs)
-		local rr, rg, rb = ColorOf(rightFs)
-		if CompareHeader(text) then
-			inCompare = true
-		end
-		if inCompare then
-			local shown = text
-			if db.shorten then
-				local replaced = ns.FormatCompare(text)
-				if replaced then
-					shown = replaced
+		local unreadable = type(text) ~= "string" or SecretBlocked(text) or SecretBlocked(right)
+		if unreadable then
+			-- One unreadable line no longer costs the whole item: the row
+			-- is kept as written and the rest still convert.
+			PushKeep()
+		else
+			local r, g, b = ColorOf(fs)
+			local rr, rg, rb = ColorOf(rightFs)
+			if CompareHeader(text) then
+				inCompare = true
+			end
+			if inCompare then
+				local shown = text
+				if db.shorten then
+					local replaced = ns.FormatCompare(text)
+					if replaced then
+						shown = replaced
+						changed = true
+					end
+				end
+				Push(shown, r, g, b, right, rr, rg, rb)
+			else
+				local newText, green = ns.PresentLine(text, db.shorten, db.showValues, snapshot)
+				local enchant = false
+				if not newText and db.shorten then
+					local enchantText = ns.FormatEnchant(text)
+					if enchantText then
+						newText = enchantText
+						enchant = true
+					end
+				end
+				local shown = newText or text
+				if newText then
 					changed = true
 				end
-			end
-			Push(shown, r, g, b, right, rr, rg, rb)
-		else
-			local newText, green = ns.PresentLine(text, db.shorten, db.showValues, snapshot)
-			local enchant = false
-			if not newText and db.shorten then
-				local enchantText = ns.FormatEnchant(text)
-				if enchantText then
-					newText = enchantText
-					enchant = true
+				local first, second = shown:match("^(.-)\n(.*)$")
+				if first and green then
+					Push(first, 0, 1, 0, right, rr, rg, rb)
+					Push(second, 0, 1, 0, nil, nil, nil, nil)
+				elseif green then
+					Push(shown, 0, 1, 0, right, rr, rg, rb)
+				elseif enchant then
+					Push(shown, ENCHANT_R, ENCHANT_G, ENCHANT_B, right, rr, rg, rb)
+				else
+					Push(shown, r, g, b, right, rr, rg, rb)
 				end
-			end
-			local shown = newText or text
-			if newText then
-				changed = true
-			end
-			local first, second = shown:match("^(.-)\n(.*)$")
-			if first and green then
-				Push(first, 0, 1, 0, right, rr, rg, rb)
-				Push(second, 0, 1, 0, nil, nil, nil, nil)
-			elseif green then
-				Push(shown, 0, 1, 0, right, rr, rg, rb)
-			elseif enchant then
-				Push(shown, ENCHANT_R, ENCHANT_G, ENCHANT_B, right, rr, rg, rb)
-			else
-				Push(shown, r, g, b, right, rr, rg, rb)
 			end
 		end
 	end
@@ -348,7 +367,11 @@ function ns.OnItemTooltip(tooltip)
 	end
 	busy[tooltip] = true
 	WriteRows(tooltip)
-	tooltip:Show()
+	-- Only re-lay out a tooltip that is on screen. A hidden or scanner
+	-- tooltip must not be surfaced by the rewrite.
+	if tooltip:IsShown() then
+		tooltip:Show()
+	end
 	busy[tooltip] = nil
 	ForgetLines()
 end

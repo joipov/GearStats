@@ -34,6 +34,7 @@
     "canaccessvalue",
     "issecrettable",
     "canaccesstable",
+    "C_Secrets",
     "C_Spell",
     "C_SpellBook",
     "C_Timer",

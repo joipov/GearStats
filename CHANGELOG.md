@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.22
+
+Re-checked against the current Forever client; no code change was needed.
+
+### Changed
+
+- Verified against Forever client 1.60.1.70862.
+
 ## 1.0.21
 
 One hidden tooltip line no longer costs the whole item its short lines.

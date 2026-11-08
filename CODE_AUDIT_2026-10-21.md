@@ -1,11 +1,18 @@
 # Gear Stats audit
 
-Target: World of Warcraft Forever, `## Interface: 16001` (client 1.60.1.70425), Lua 5.1.
-Compared 2026-10-21 against EasyGreenStats 1.3.0 (2026-10-17), PrettyTooltip
-1.3.5 (2026-10-21), and ForeverBiS beta-0.0.81 (2026-10-21). Behaviour only:
-EasyGreenStats and ForeverBiS ship no licence, so nothing was taken from them.
+Target: World of Warcraft Forever, `## Interface: 16001` (client 1.60.1.70862), Lua 5.1.
+Compared 2026-10-21 against EasyGreenStats 1.3.0, PrettyTooltip 1.3.5, and
+ForeverBiS beta-0.0.81. Behaviour only: EasyGreenStats and ForeverBiS ship no
+licence, so nothing was taken from them. Re-checked against client
+1.60.1.70862 on 2026-11-08.
 
 This note is for development. It is not shipped in the addon zip.
+
+## What changed in 1.0.22
+
+- Re-checked the tooltip post-call, the stat-worth snapshot, and the secret
+  guards against client 1.60.1.70862. `TooltipDataProcessor.AddTooltipPostCall`
+  and the item tooltip fields keep their shapes. No code change.
 
 ## What changed in 1.0.21
 

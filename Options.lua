@@ -34,29 +34,25 @@ function ns.InitOptions()
 	enableSetting:SetValueChangedCallback(function()
 		ns.SetEnabled()
 	end)
-	local enableCheckbox = Settings.CreateCheckbox(
+	Settings.CreateCheckbox(
 		category,
 		enableSetting,
 		"Shortens stat lines on items and shows what Strength, Agility, attack power, and mana per 5 seconds are worth."
 	)
 
-	local minimapSetting = Settings.RegisterAddOnSetting(
-		category,
-		"GS_SHOW_MINIMAP",
-		"showMinimapButton",
-		ns.db,
-		Settings.VarType.Boolean,
-		"Minimap button",
-		ns.defaults.showMinimapButton
-	)
-	minimapSetting:SetValueChangedCallback(function()
-		ns.UpdateMinimapButton()
-	end)
-	Settings.CreateCheckbox(
-		category,
-		minimapSetting,
-		"Button on the minimap. Opens settings."
-	)
+	local function GateOn(initializer)
+		if not initializer then
+			return
+		end
+		if initializer.AddModifyPredicate then
+			initializer:AddModifyPredicate(function()
+				return enableSetting:GetValue()
+			end)
+		end
+		if initializer.AddEvaluateStateCVar then
+			initializer:AddEvaluateStateCVar("GS_ENABLED")
+		end
+	end
 
 	local shortenSetting = Settings.RegisterAddOnSetting(
 		category,
@@ -88,12 +84,28 @@ function ns.InitOptions()
 		"Shows attack power and armor for Strength and Agility, the Strength or Agility behind attack power, and the Spirit behind mana per 5 seconds."
 	)
 
-	local function Enabled()
-		return enableSetting:GetValue()
-	end
-	-- The Minimap button row stays live while the addon is off (house style).
-	shortenCheckbox:SetParentInitializer(enableCheckbox, Enabled)
-	valuesCheckbox:SetParentInitializer(enableCheckbox, Enabled)
+	GateOn(shortenCheckbox)
+	GateOn(valuesCheckbox)
+
+	local minimapSetting = Settings.RegisterAddOnSetting(
+		category,
+		"GS_SHOW_MINIMAP",
+		"showMinimapButton",
+		ns.db,
+		Settings.VarType.Boolean,
+		"Minimap button",
+		ns.defaults.showMinimapButton
+	)
+	minimapSetting:SetValueChangedCallback(function()
+		ns.UpdateMinimapButton()
+	end)
+	Settings.CreateCheckbox(
+		category,
+		minimapSetting,
+		"Button on the minimap. Opens settings. Stays available when the addon is off."
+	)
+
+	ns.AddProfileShareButtons(category)
 
 	Settings.RegisterAddOnCategory(category)
 end

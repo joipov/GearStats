@@ -14,6 +14,7 @@ end
 load("Patterns.lua")
 load("Convert.lua")
 load("Database.lua")
+load("Profile.lua")
 load("Tooltip.lua")
 
 local passed, failed = 0, 0
@@ -393,6 +394,23 @@ test("numbers drop a trailing zero", function()
 	eq(ns.FormatNumber(3.04), "3")
 	eq(ns.FormatNumber(3.06), "3.1")
 	eq(ns.FormatNumber(-12), "-12")
+end)
+
+test("profile export roundtrips settings", function()
+	ns.db = ns.LoadDB({ shorten = false, showValues = false, minimapIcon = { minimapPos = 33 } })
+	local str = ns.ExportProfile()
+	eq(str:sub(1, 14), "!JPV:GearStats", "prefix")
+	ns.db = ns.LoadDB(nil)
+	eq(ns.db.shorten, true, "reset")
+	eq(ns.ImportProfile(str), true, "import")
+	eq(ns.db.shorten, false, "shorten")
+	eq(ns.db.showValues, false, "showValues")
+	eq(ns.db.minimapIcon.minimapPos, 33, "minimapPos")
+end)
+
+test("profile import rejects another addon", function()
+	ns.db = ns.LoadDB(nil)
+	eq(ns.ImportProfile("!JPV:IncomingText!{shorten=false}"), nil, "other")
 end)
 
 if failed > 0 then

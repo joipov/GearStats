@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.0.24
+
+Settings and positions can be copied as a string and pasted on another character or computer.
+
+### Added
+
+- **Export profile** and **Import profile** in settings. Import reloads the UI.
+
+## 1.0.23
+
+Settings no longer indent Shorten and Show values under the minimap button.
+
+### Changed
+
+- Feature rows grey out when the addon is off. They stay full-width. The minimap button is last and stays clickable.
+
 ## 1.0.22
 
 Re-checked against the current Forever client; no code change was needed.
